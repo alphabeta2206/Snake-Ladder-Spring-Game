@@ -1,16 +1,19 @@
 package com.Task1.Task.model;
 
 import com.Task1.Task.enums.CancelReason;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.Date;
 
-@Getter
-@Setter
+@Data
+@Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
+@Table(name = "game")
 public class Game {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long gid;
     private Date createdTime;
