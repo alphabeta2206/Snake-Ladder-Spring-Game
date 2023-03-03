@@ -6,6 +6,8 @@ import com.Task1.Task.repository.GameRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class GameService {
     @Autowired
@@ -17,6 +19,10 @@ public class GameService {
 
     public Game getById(Long id) {
         return gameRepository.getReferenceById(id);
+    }
+
+    public List<Game> gameList() {
+        return gameRepository.findAll();
     }
 
 }

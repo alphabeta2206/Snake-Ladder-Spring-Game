@@ -17,4 +17,7 @@ public class BetService {
     public Bet getByBetId(Long betId) {
         return betRepository.getReferenceById(betId);
     }
+
+    public Bet getByUserId(Long userId) { return betRepository.findByUserId(userId); }
+
 }

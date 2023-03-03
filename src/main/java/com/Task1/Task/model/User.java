@@ -17,7 +17,7 @@ public class User {
     private String name;
     private String userName;
     private String password;
-    private Long walletAmt;
+    private double walletAmt;
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(
             name = "user_roles",

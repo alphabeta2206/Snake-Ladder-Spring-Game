@@ -2,8 +2,6 @@ package com.Task1.Task.controller;
 
 import com.Task1.Task.model.Role;
 import com.Task1.Task.model.User;
-import com.Task1.Task.repository.UserRepo;
-import com.Task1.Task.service.UserInfoService;
 import com.Task1.Task.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -17,9 +15,6 @@ import java.util.List;
 public class HomeController {
     @Autowired
     UserService userService;
-
-    @Autowired
-    UserRepo userRepo;
 
     @Autowired
     BCryptPasswordEncoder passwordEncoder;

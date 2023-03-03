@@ -12,9 +12,9 @@ public class BetController {
         return "Bet Placed";
     }
 
-    @RequestMapping("/payout")
-    @ResponseBody
-    public void payOut(){
-
-    }
+//    @RequestMapping("/payout")
+//    @ResponseBody
+//    public void payOut(){
+//
+//    }
 }

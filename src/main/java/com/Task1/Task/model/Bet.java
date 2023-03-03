@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.sql.Time;
 import java.sql.Timestamp;
 
 @Entity
@@ -18,9 +17,9 @@ public class Bet {
     private Long id;
     private Long gameId;
     private Long userId;
-    private Long amount;
-    private Long payOff;
+    private double amount;
+    private double payOff;
     private Timestamp placeTime;
     private Timestamp settleTime;
-    private boolean status;
+    private Character status;
 }
