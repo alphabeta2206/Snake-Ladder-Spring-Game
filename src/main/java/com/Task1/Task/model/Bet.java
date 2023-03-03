@@ -5,16 +5,22 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.sql.Time;
+import java.sql.Timestamp;
+
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Role {
+public class Bet {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String name;
-    public Role(String name) {
-        this.name = name;
-    }
+    private Long gameId;
+    private Long userId;
+    private Long amount;
+    private Long payOff;
+    private Timestamp placeTime;
+    private Timestamp settleTime;
+    private boolean status;
 }

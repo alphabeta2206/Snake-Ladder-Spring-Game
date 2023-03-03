@@ -1,26 +1,40 @@
 package com.Task1.Task.model;
 
+import com.Task1.Task.enums.GameStatus;
 import com.Task1.Task.enums.CancelReason;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.Date;
+import java.sql.Timestamp;
+import java.util.HashSet;
+import java.util.Set;
 
-@Data
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "game")
+@Data
 public class Game {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long gid;
-    private Date createdTime;
-    private int playerOneID;
-    private int playerTwoID;
-    private int playerThreeID;
-    private int playerFourID;
-    private Long bet_amt;
-    private Enum<CancelReason> cancelledReason;
+    @ManyToOne(
+            cascade = CascadeType.ALL
+    )
+    private GameType gametype;
+    private String assignGameName;
+    private boolean flag;
+    private Timestamp gameStartTime;
+    private GameStatus gameStatus;
+    private double betAmount;
+    @Column(nullable = true)
+    private CancelReason cancelReason;
+    @ManyToOne(
+            cascade = CascadeType.ALL
+    )
+    private User creator;
+
+    @OneToMany(
+            cascade = CascadeType.PERSIST
+    )
+    private Set<User> players = new HashSet<>();
 }
