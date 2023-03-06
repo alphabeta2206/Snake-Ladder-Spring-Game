@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
 import java.security.Principal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -29,11 +30,11 @@ public class GameController {
 
     @RequestMapping("/lobby")
     @ResponseBody
-    public List<Game> lobby(){
+    public List<Game> lobby() {
         return gameService.gameList();
     }
 
-    @RequestMapping("/creategame/{gametype}/{gamename}")
+    @RequestMapping("/creategame/{gametype}/{gamename}/{betamount}")
     @ResponseBody
     public String createGame(@PathVariable String gametype, @PathVariable String gamename, Principal principal) {
         User user = userService.getByUsername(principal.getName());
@@ -46,16 +47,35 @@ public class GameController {
         game.setCreator(user);
         game.setAssignGameName(gamename);
         game.setGameStatus(GameStatus.NEW);
+        game.getPlayers().add(user);
         gameService.saveGame(game);
         return "Game Created";
     }
 
+//    @RequestMapping("/creategame")
+//    @ResponseBody
+//    public String createGame1(@RequestBody Game game, Principal principal) {
+//        User user = userService.getByUsername(principal.getName());
+//        Role role = new Role("ROLE_ADMIN");
+//        user.getRoles().add(role);
+//        user.setRoles(user.getRoles());
+////        Game game = new Game();
+////        game.setGametype(new GameType(gametype));
+//        game.setGameStartTime(new Timestamp(System.currentTimeMillis()));
+//        game.setCreator(user);
+////        game.setAssignGameName(gamename);
+//        game.setGameStatus(GameStatus.NEW);
+//        game.getPlayers().add(user);
+//        gameService.saveGame(game);
+//        return "Game Created";
+//    }
+
     @RequestMapping("/startgame/{gid}")
     @ResponseBody
-    public String startGame(@PathVariable Long gid){
+    public String startGame(@PathVariable Long gid) {
         Game game = gameService.getById(gid);
         Set<User> playerList = game.getPlayers();
-        if(playerList.size()>1){
+        if (playerList.size() > 1) {
             game.setGameStatus(GameStatus.IN_PROGRESS);
             gameService.saveGame(game);
             playerList.forEach(user -> {
@@ -68,6 +88,7 @@ public class GameController {
                 betService.saveBet(bet);
                 userService.saveUser(user);
             });
+            return "Successfully Started Game";
         }
         return "Minimum of Two Players required to start game";
     }
@@ -78,7 +99,7 @@ public class GameController {
     public String deleteGame(@PathVariable long gid) {
         Game game = gameService.getById(gid);
         Set<User> playerList = game.getPlayers();
-        if(game.getGameStatus() == GameStatus.IN_PROGRESS){
+        if (game.getGameStatus() == GameStatus.IN_PROGRESS) {
             gameService.saveGame(game);
             playerList.forEach(user -> {
                 Bet bet = betService.getByUserId(user.getId());
@@ -107,10 +128,10 @@ public class GameController {
 
     @RequestMapping("/endgame/{gid}/{payout}")
     @ResponseBody
-    public String endGame(@PathVariable Long gid, @PathVariable double payout){
+    public String endGame(@PathVariable Long gid, @PathVariable double payout) {
         Game game = gameService.getById(gid);
         Set<User> playerList = game.getPlayers();
-        if(game.getGameStatus() == GameStatus.IN_PROGRESS){
+        if (game.getGameStatus() == GameStatus.IN_PROGRESS) {
             gameService.saveGame(game);
             playerList.forEach(user -> {
                 Bet bet = betService.getByUserId(user.getId());

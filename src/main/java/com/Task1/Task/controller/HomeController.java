@@ -21,7 +21,7 @@ public class HomeController {
 
     @RequestMapping("/home")
     @ResponseBody
-    public String home(){
+    public String home() {
         return "Welcome please login or register";
     }
 
@@ -37,7 +37,7 @@ public class HomeController {
         return "registerForm";
     }
 
-    @PostMapping ("/process_register")
+    @PostMapping("/process_register")
     public String processRegister(@RequestParam String username, @RequestParam String name, @RequestParam String password, @RequestParam long wallet_amt) {
         User user = new User();
         user.setUserName(username);
@@ -51,7 +51,7 @@ public class HomeController {
     }
 
     @GetMapping("/logout")
-    public String logout(){
+    public String logout() {
         return "logoutForm";
     }
 
