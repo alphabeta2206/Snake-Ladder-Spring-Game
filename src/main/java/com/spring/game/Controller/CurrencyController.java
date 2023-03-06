@@ -31,3 +31,4 @@ public class CurrencyController {
         return currencyService.getCurrencyExchanges();
     }
 }
+//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
