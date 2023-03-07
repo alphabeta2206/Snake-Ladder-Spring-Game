@@ -2,6 +2,7 @@ package com.Task1.Task.controller;
 
 import com.Task1.Task.enums.CancelReason;
 import com.Task1.Task.enums.GameStatus;
+import com.Task1.Task.exceptions.GameException;
 import com.Task1.Task.model.*;
 import com.Task1.Task.service.BetService;
 import com.Task1.Task.service.CurrencyService;
@@ -58,8 +59,7 @@ public class GameController {
     }
 
     @RequestMapping("/startgame/{gid}")
-    @ResponseBody
-    public String startGame(@PathVariable Long gid) {
+    public void startGame(@PathVariable Long gid) {
         Game game = gameService.getById(gid);
         Set<User> playerList = game.getPlayers();
         if (playerList.size() > 1) {
@@ -76,18 +76,15 @@ public class GameController {
                 betService.saveBet(bet);
                 userService.saveUser(user);
             });
-            return "Successfully Started Game";
-        }
-        return "Minimum of Two Players required to start game";
+        }else throw new GameException("Minimum of Two Players required to start game");
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @RequestMapping("/cancelgame/{gid}")
-    @ResponseBody
-    public String deleteGame(@PathVariable long gid) {
+    public void deleteGame(@PathVariable long gid) {
         Game game = gameService.getById(gid);
         Set<User> playerList = game.getPlayers();
-        if (game.getGameStatus() == GameStatus.IN_PROGRESS) {
+        if (game.getGameStatus() == GameStatus.IN_PROGRESS || game.getGameStatus() == GameStatus.NEW) {
             gameService.saveGame(game);
             playerList.forEach(user -> {
                 Bet bet = betService.getByUserId(user.getId());
@@ -95,28 +92,26 @@ public class GameController {
                 bet.setStatus('C');
                 betService.saveBet(bet);
             });
-        }
+        }else throw new GameException("Game Already Cancelled");
         game.setGameStatus(GameStatus.COMPLETED);
         game.setCancelReason(CancelReason.USER_CANCELLED);
         gameService.saveGame(game);
-        return "deleted successfully";
     }
 
     @GetMapping("/joingame/{gid}")
-    @ResponseBody
-    public String joinGame(@PathVariable Long gid, Principal principal) {
+    public void joinGame(@PathVariable Long gid, Principal principal) {
         Game game = gameService.getById(gid);
         if (game.getGameStatus() == GameStatus.NEW) {
             User user = userService.getByUsername(principal.getName());
             game.getPlayers().add(user);
-        }
+        }else if (game.getGameStatus() == GameStatus.IN_PROGRESS) throw new GameException("Game Already In Progress");
+        else throw new GameException("Game Already Cancelled");
         gameService.saveGame(game);
-        return "Successfully Joined Game";
     }
 
     @RequestMapping("/endgame/{gid}/{payout}")
     @ResponseBody
-    public String endGame(@PathVariable Long gid, @PathVariable double payout) {
+    public void endGame(@PathVariable Long gid, @PathVariable double payout) {
         Game game = gameService.getById(gid);
         Set<User> playerList = game.getPlayers();
         if (game.getGameStatus() == GameStatus.IN_PROGRESS) {
@@ -130,9 +125,9 @@ public class GameController {
                 bet.setStatus('S');
                 betService.saveBet(bet);
             });
+            game.setGameStatus(GameStatus.COMPLETED);
+            gameService.saveGame(game);
         }
-        game.setGameStatus(GameStatus.COMPLETED);
-        gameService.saveGame(game);
-        return "Game End";
+        else throw new GameException("Game Already Ended");
     }
 }
