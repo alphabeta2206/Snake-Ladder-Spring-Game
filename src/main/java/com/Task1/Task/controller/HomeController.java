@@ -13,6 +13,7 @@ import java.util.List;
 
 @Controller
 public class HomeController {
+
     @Autowired
     UserService userService;
 
@@ -38,12 +39,13 @@ public class HomeController {
     }
 
     @PostMapping("/process_register")
-    public String processRegister(@RequestParam String username, @RequestParam String name, @RequestParam String password, @RequestParam long wallet_amt) {
+    public String processRegister(@RequestParam String username, @RequestParam String name, @RequestParam String password, @RequestParam long walletAmt, @RequestParam String currencyCode) {
         User user = new User();
         user.setUserName(username);
         user.setName(name);
         user.setPassword(passwordEncoder.encode(password));
-        user.setWalletAmt(wallet_amt);
+        user.setWalletAmt(walletAmt);
+        user.setCurrencyCode(currencyCode);
         Role role = new Role("ROLE_USER");
         user.setRoles(List.of(role));
         userService.saveUser(user);
@@ -54,5 +56,4 @@ public class HomeController {
     public String logout() {
         return "logoutForm";
     }
-
 }

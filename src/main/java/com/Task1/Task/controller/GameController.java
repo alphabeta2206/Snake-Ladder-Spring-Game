@@ -4,6 +4,7 @@ import com.Task1.Task.enums.CancelReason;
 import com.Task1.Task.enums.GameStatus;
 import com.Task1.Task.model.*;
 import com.Task1.Task.service.BetService;
+import com.Task1.Task.service.CurrencyService;
 import com.Task1.Task.service.GameService;
 import com.Task1.Task.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import java.util.Set;
 
 @Controller
 public class GameController {
+
     @Autowired
     UserService userService;
 
@@ -27,6 +29,9 @@ public class GameController {
 
     @Autowired
     BetService betService;
+
+    @Autowired
+    CurrencyService currencyService;
 
     @RequestMapping("/lobby")
     @ResponseBody
@@ -52,24 +57,6 @@ public class GameController {
         return "Game Created";
     }
 
-//    @RequestMapping("/creategame")
-//    @ResponseBody
-//    public String createGame1(@RequestBody Game game, Principal principal) {
-//        User user = userService.getByUsername(principal.getName());
-//        Role role = new Role("ROLE_ADMIN");
-//        user.getRoles().add(role);
-//        user.setRoles(user.getRoles());
-////        Game game = new Game();
-////        game.setGametype(new GameType(gametype));
-//        game.setGameStartTime(new Timestamp(System.currentTimeMillis()));
-//        game.setCreator(user);
-////        game.setAssignGameName(gamename);
-//        game.setGameStatus(GameStatus.NEW);
-//        game.getPlayers().add(user);
-//        gameService.saveGame(game);
-//        return "Game Created";
-//    }
-
     @RequestMapping("/startgame/{gid}")
     @ResponseBody
     public String startGame(@PathVariable Long gid) {
@@ -79,9 +66,10 @@ public class GameController {
             game.setGameStatus(GameStatus.IN_PROGRESS);
             gameService.saveGame(game);
             playerList.forEach(user -> {
+                double multiplier = currencyService.getMultiplier(user.getCurrencyCode());
                 Bet bet = new Bet();
                 bet.setAmount(game.getBetAmount());
-                user.setWalletAmt(user.getWalletAmt() - game.getBetAmount());
+                user.setWalletAmt(user.getWalletAmt() - (game.getBetAmount() * multiplier));
                 bet.setPlaceTime(Timestamp.from(Instant.now()));
                 bet.setGameId(game.getId());
                 bet.setUserId(user.getId());
@@ -135,8 +123,9 @@ public class GameController {
             gameService.saveGame(game);
             playerList.forEach(user -> {
                 Bet bet = betService.getByUserId(user.getId());
+                double multiplier = currencyService.getMultiplier(user.getCurrencyCode());
                 bet.setPayOff(payout);
-                user.setWalletAmt(user.getWalletAmt() + payout); // add logic for payout
+                user.setWalletAmt(user.getWalletAmt() + payout * multiplier);
                 bet.setSettleTime(Timestamp.from(Instant.now()));
                 bet.setStatus('S');
                 betService.saveBet(bet);
