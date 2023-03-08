@@ -3,9 +3,6 @@ package com.Task1.Task.gamelogic;
 import com.Task1.Task.dto.PlayerDTO;
 
 import java.util.*;
-import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.toMap;
 
 public class SNL extends GameLogic {
     private HashMap<Integer, Integer> snakes; // Key = head, value = tail
