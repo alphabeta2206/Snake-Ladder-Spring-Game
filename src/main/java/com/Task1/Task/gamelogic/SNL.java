@@ -1,5 +1,6 @@
 package com.Task1.Task.gamelogic;
 
+import com.Task1.Task.controller.BonusLadderDTO;
 import com.Task1.Task.dto.PlayerDTO;
 
 import java.util.*;
@@ -8,8 +9,8 @@ import java.util.stream.Collectors;
 public class SNL extends GameLogic {
     private HashMap<Integer, Integer> snakes; // Key = head, value = tail
     private HashMap<Integer, Integer> ladders; // Key = bottom, value = top
-    private HashMap<Integer, Integer> bonusLadders;
-    private HashMap<Integer, Integer> bonusSnake;
+
+    private List<BonusLadderDTO> bonusLadders;
 
     public SNL(List<PlayerDTO> players, double pricePool) {
         super(players, pricePool);
@@ -50,16 +51,18 @@ public class SNL extends GameLogic {
     public void generateBonusLadder(int currentPlayerPosition) {
         // Generating to two levels above
         Random rand = new Random();
-        for (int i = currentPlayerPosition + 1; i <= currentPlayerPosition + 6; i++) {
-            if (bonusLadders.containsKey(i)) {
-                return;
-            }
+        BonusLadderDTO bonusLadder = new BonusLadderDTO();
+
+        for(BonusLadderDTO ladder: bonusLadders){
+            if (ladder.getLadderStart() > currentPlayerPosition && ladder.getLadderStart() < currentPlayerPosition + 6){ return; }
         }
         int ladderStart = rand.nextInt(currentPlayerPosition, currentPlayerPosition + 6);
         int startLevel = ladderStart % 8;
         int endLevel = Math.min(startLevel + 3, 8);
         int ladderEnd = rand.nextInt((endLevel - 1) * 8 + 1, endLevel * 8 + 1);
-        bonusLadders.put(ladderStart, ladderEnd);
+        bonusLadder.setLadderStart(ladderStart);
+        bonusLadder.setLadderEnd(ladderEnd);
+        this.bonusLadders.add(bonusLadder);
     }
 
     @Override
