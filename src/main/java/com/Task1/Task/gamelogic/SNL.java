@@ -106,7 +106,6 @@ public class SNL extends GameLogic {
     @Override
     public void calculatePayout() {
         super.getWinnerList().forEach((player, value) -> player.setPayout(getPayoutMultiplier(value) * super.getPricePool()));
-//        super.getWinnerList().entrySet().forEach(player -> player.getKey()setPayout(getPayoutMultiplier(super.getWinnerList().get(player)) * super.getPricePool()));
     }
 
     @Override
@@ -129,6 +128,5 @@ public class SNL extends GameLogic {
     public void updateWinnerList(PlayerDTO player) {
         super.setPlayersWon(super.getPlayersWon() + 1);
         super.getWinnerList().put(player, super.getPlayersWon() - 1);
-//        System.out.println(getWinnerList());
     }
 }
