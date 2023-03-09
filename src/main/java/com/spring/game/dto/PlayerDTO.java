@@ -14,6 +14,8 @@ public class PlayerDTO {
     private int prev_roll;
     private boolean two_sixes;
     private boolean three_sixes;
+    private double payout;
+
 
     public PlayerDTO(long id){
         this.id = id;

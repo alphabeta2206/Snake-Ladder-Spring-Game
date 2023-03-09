@@ -19,7 +19,10 @@ public class Game {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    private long gameTypeId;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "game_type_id", referencedColumnName = "id")
+    private GameType gameType;
     private String assignGameName;
     private Timestamp gameStartTime;
     private GameStatus gameStatus;

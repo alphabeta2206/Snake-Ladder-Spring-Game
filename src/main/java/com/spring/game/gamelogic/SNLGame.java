@@ -1,67 +1,149 @@
 package com.spring.game.gamelogic;
 
+import com.spring.game.dto.BonusLadderDTO;
 import com.spring.game.dto.PlayerDTO;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
+import java.util.stream.Collectors;
 
-public class SNLGame extends GameLogic{
-
+public class SNLGame extends GameLogic {
     private HashMap<Integer, Integer> snakes; // Key = head, value = tail
     private HashMap<Integer, Integer> ladders; // Key = bottom, value = top
-    private HashMap<Integer, Integer> bonusLadder;
-    private HashMap<Integer, Integer> bonusSnake;
-    public SNLGame(List<PlayerDTO> players) {
-        super(players);
+
+    private List<BonusLadderDTO> bonusLadders;
+
+    public SNLGame(List<PlayerDTO> players, double pricePool) {
+        super(players, pricePool);
+        bonusLadders = new ArrayList<BonusLadderDTO>();
 
         Random random = new Random();
         snakes = new HashMap<>();
         ladders = new HashMap<>();
+
         // Generate Random Snakes
         Map<Integer, Integer> SNAKE_CONFIG = Map.of(6, 2, 8, 1, 5, 3, 2, 1, 4, 3);
-        for(Map.Entry<Integer, Integer> entry : SNAKE_CONFIG.entrySet()){
+        for (Map.Entry<Integer, Integer> entry : SNAKE_CONFIG.entrySet()) {
             int key = entry.getKey();
             int value = entry.getValue();
-            int snakeHead = random.nextInt(8*(key-1)+1, 8*key+1);
-            int snakeTail = random.nextInt(8*(value-1)+1, 8*value+1);
+            int snakeHead = random.nextInt(8 * (key - 1) + 1, 8 * key + 1);
+            int snakeTail = random.nextInt(8 * (value - 1) + 1, 8 * value + 1);
             snakes.put(snakeHead, snakeTail);
         }
         // Generate Random Ladders
         Map<Integer, Integer> LADDER_CONFIG = Map.of(2, 6, 1, 7, 3, 8, 5, 6, 7, 8);
-        for(Map.Entry<Integer, Integer> entry : LADDER_CONFIG.entrySet()){
+        for (Map.Entry<Integer, Integer> entry : LADDER_CONFIG.entrySet()) {
             int key = entry.getKey();
             int value = entry.getValue();
-            int ladderBottom = random.nextInt(8*(key-1)+1, 8*key+1);
-            int ladderTop = random.nextInt(8*(value-1)+1, 8*value+1);
+            int ladderBottom = random.nextInt(8 * (key - 1) + 1, 8 * key + 1);
+            int ladderTop = random.nextInt(8 * (value - 1) + 1, 8 * value + 1);
             ladders.put(ladderBottom, ladderTop);
         }
     }
 
-    @Override
-    public void rollDie() {
-        int dieValue = super.getDice().getValue();
-        int playerTurn = super.getPlayerTurn()%super.getPlayers().size();
-        PlayerDTO player = super.getPlayers().get(playerTurn);
-        int nextPosition = player.getPosition() + dieValue;
-
-        if(snakes.containsKey(nextPosition)){
-            nextPosition = snakes.get(nextPosition);
-        }else if(ladders.containsKey(nextPosition)){
-            nextPosition = ladders.get(nextPosition);
+    public boolean isPrime(int no) {
+        int count = 0;
+        for (int i = 1; i <= no; i++) {
+            if (no % i == 0)
+                count++;
         }
-        System.out.println(getPlayers());
-        player.setPosition(nextPosition);
-        player.setMoves(player.getMoves()+1);
-        player.setPrev_roll(dieValue);
-        super.getPlayers().set(playerTurn, player);
-        System.out.println(getPlayers());
+        return count == 2;
+    }
 
+    public void generateBonusLadder(int currentPlayerPosition) {
+        // Generating to two levels above
+        Random rand = new Random();
+        BonusLadderDTO bonusLadder = new BonusLadderDTO();
+
+        for(BonusLadderDTO ladder: bonusLadders){
+            if (ladder.getLadderStart() > currentPlayerPosition && ladder.getLadderStart() < currentPlayerPosition + 6){
+                ladder.setLife(ladder.getLife() + 1);
+                return;
+            }
+        }
+        boolean flag = true;
+        int ladderStart = 0;
+        while(flag) {
+            ladderStart = rand.nextInt(currentPlayerPosition, currentPlayerPosition + 6);
+            if(ladders.containsKey(ladderStart) || snakes.containsKey(ladderStart))continue;
+            flag = false;
+        }
+
+        int startLevel = ladderStart % 8;
+        int endLevel = Math.min(startLevel + 3, 8);
+        int ladderEnd = rand.nextInt((endLevel - 1) * 8 + 1, endLevel * 8 + 1);
+        bonusLadder.setLadderStart(ladderStart);
+        bonusLadder.setLadderEnd(ladderEnd);
+        bonusLadder.setLife(super.getPlayers().size());
+        this.bonusLadders.add(bonusLadder);
     }
 
     @Override
-    public PlayerDTO calculatePayout() {
-        return null;
+    public void rollDie() {
+        super.setTotalMoves(super.getTotalMoves() + 1);
+        int dieValue = super.getDice().getValue();
+        int playerTurn = super.getPlayerTurn();
+        PlayerDTO player = super.getPlayers().get(playerTurn);
+        int nextPosition = player.getPosition() + dieValue;
+
+        if (snakes.containsKey(nextPosition)) {
+            nextPosition = snakes.get(nextPosition);
+        } else if (ladders.containsKey(nextPosition)) {
+            nextPosition = ladders.get(nextPosition);
+        } else {
+            for (BonusLadderDTO bonusLadder : bonusLadders) {
+                if (bonusLadder.getLadderStart() == nextPosition) nextPosition = bonusLadder.getLadderEnd();
+            }
+        }
+
+        if (nextPosition<64){ // still playing
+            player.setPosition(nextPosition);
+            player.setMoves(player.getMoves() + 1);
+            player.setPrev_roll(dieValue);
+            super.getPlayers().set(playerTurn, player);
+        }
+        else {
+            player.setPosition(nextPosition);
+            player.setMoves(player.getMoves() + 1);
+            player.setPrev_roll(dieValue);
+            super.getPlayers().set(playerTurn, player);
+            this.updateWinnerList(player); // player won
+            super.updateGameState(player);
+            playerTurn--;
+        }
+        bonusLadders.forEach(ladder -> ladder.setLife(ladder.getLife() - 1));
+        bonusLadders.removeIf(ladder -> ladder.getLife() == 0);
+        playerTurn++;  // Update player turn
+        if(playerTurn==super.getPlayers().size()) {
+            playerTurn = 0;
+            super.setRound(super.getRound()+1);
+        }
+        super.setPlayerTurn(playerTurn);
+    }
+
+    @Override
+    public void calculatePayout() {
+        super.getWinnerList().forEach((player, value) -> player.setPayout(getPayoutMultiplier(value) * super.getPricePool()));
+    }
+
+    @Override
+    public double getPayoutMultiplier(int winNum) {
+        int playerCount = super.getWinnerList().size() + 1;
+        if (playerCount == 2) {
+            if (winNum == 0) return 1;
+        } else if (playerCount == 3) {
+            if (winNum == 0) return 0.6;
+            else if (winNum == 1) return 0.4;
+        } else if (playerCount == 4) {
+            if (winNum == 0) return 0.5;
+            else if (winNum == 1) return 0.3;
+            else if (winNum == 2) return 0.2;
+        }
+        return 0;
+    }
+
+    @Override
+    public void updateWinnerList(PlayerDTO player) {
+        super.setPlayersWon(super.getPlayersWon() + 1);
+        super.getWinnerList().put(player, super.getPlayersWon() - 1);
     }
 }

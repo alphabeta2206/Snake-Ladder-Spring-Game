@@ -59,7 +59,7 @@ public class GameController {
             // Creating a new game
             game.setAssignGameName(gameDTO.getAssignGameName());
             game.setBetAmount(gameDTO.getBetAmount());
-            game.setGameTypeId(gameDTO.getGameTypeId());
+            game.setGameType(gameService.getGameType(gameDTO.getGameTypeId()));
             game.setCreator(creator);
             game.getPlayers().add(creator);
             return gameService.createGame(game);

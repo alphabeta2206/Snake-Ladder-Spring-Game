@@ -50,4 +50,8 @@ public class GameService {
         gameRepo.save(game);
     }
 
+    public GameType getGameType(long id) {
+        return gameTypeRepo.findById(id).orElseThrow(EntityNotFoundException::new);
+    }
+
 }
