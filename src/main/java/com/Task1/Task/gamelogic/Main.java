@@ -11,13 +11,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
-class thread1 implements Runnable{
-    @Override
-    public void run() {
-        // TODO Auto-generated method stub
-    }
-}
-
 public class Main {
     public static void main(String[] args) throws InterruptedException {
         Game game = new Game();

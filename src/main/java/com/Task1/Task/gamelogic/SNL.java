@@ -1,6 +1,7 @@
 package com.Task1.Task.gamelogic;
 
 import com.Task1.Task.dto.BonusLadderDTO;
+import com.Task1.Task.dto.BonusSnakeDTO;
 import com.Task1.Task.dto.PlayerDTO;
 
 import java.util.*;
@@ -11,9 +12,12 @@ public class SNL extends GameLogic {
 
     private List<BonusLadderDTO> bonusLadders;
 
+    private List<BonusSnakeDTO> bonusSnakes;
+
     public SNL(List<PlayerDTO> players, double pricePool) {
         super(players, pricePool);
         bonusLadders = new ArrayList<BonusLadderDTO>();
+        bonusSnakes = new ArrayList<BonusSnakeDTO>();
 
         Random random = new Random();
         snakes = new HashMap<>();
@@ -49,11 +53,10 @@ public class SNL extends GameLogic {
     }
 
     public void generateBonusLadder(int currentPlayerPosition) {
-        // Generating to two levels above
         Random rand = new Random();
         BonusLadderDTO bonusLadder = new BonusLadderDTO();
 
-        for(BonusLadderDTO ladder: bonusLadders){
+        for(BonusLadderDTO ladder: this.bonusLadders){
             if (ladder.getLadderStart() > currentPlayerPosition && ladder.getLadderStart() < currentPlayerPosition + 6){
                 ladder.setLife(ladder.getLife() + 1);
                 return;
@@ -63,7 +66,7 @@ public class SNL extends GameLogic {
         int ladderStart = 0;
         while(flag) {
             ladderStart = rand.nextInt(currentPlayerPosition, currentPlayerPosition + 6);
-            if(ladders.containsKey(ladderStart) || snakes.containsKey(ladderStart))continue;
+            if(ladders.containsKey(ladderStart) || snakes.containsKey(ladderStart)) continue;
             flag = false;
         }
 
@@ -74,6 +77,31 @@ public class SNL extends GameLogic {
         bonusLadder.setLadderEnd(ladderEnd);
         bonusLadder.setLife(super.getPlayers().size());
         this.bonusLadders.add(bonusLadder);
+    }
+
+    public void generateBonusSnake(int currentPlayerPosition){
+        Random rand = new Random();
+        BonusSnakeDTO bonusSnake = new BonusSnakeDTO();
+
+        for(BonusSnakeDTO snake: this.bonusSnakes){
+            if (snake.getSnakeStart() > currentPlayerPosition && snake.getSnakeStart() < currentPlayerPosition + 6){
+                snake.setLife(snake.getLife() + 1);
+                return;
+            }
+        }
+        boolean flag = true;
+        int snakeStart = 0;
+        while(flag) {
+            snakeStart = rand.nextInt(currentPlayerPosition, currentPlayerPosition + 6);
+            if(ladders.containsKey(snakeStart) || snakes.containsKey(snakeStart)) continue;
+            flag = false;
+        }
+
+        int snakeEnd = rand.nextInt(7) + 1;
+        bonusSnake.setSnakeStart(snakeStart);
+        bonusSnake.setSnakeEnd(snakeEnd);
+        bonusSnake.setLife(super.getPlayers().size());
+        this.bonusSnakes.add(bonusSnake);
     }
 
     @Override
@@ -95,12 +123,16 @@ public class SNL extends GameLogic {
             for (BonusLadderDTO bonusLadder : bonusLadders) {
                 if (bonusLadder.getLadderStart() == nextPosition) nextPosition = bonusLadder.getLadderEnd();
             }
+            for(BonusSnakeDTO bonusSnake: bonusSnakes){
+                if (bonusSnake.getSnakeStart() == nextPosition) nextPosition = bonusSnake.getSnakeEnd();
+            }
         }
 
         if(player.getPrevRoll() == 6 && !player.isThreeSixes())  {
             if(isPrime(dieValue + 6)) generateBonusLadder(nextPosition); // generate bonus ladder
             if(player.isTwoSixes() && dieValue == 6) {
                 player.setTwoSixes(false);
+                generateBonusSnake(nextPosition); // generate bonus snake
                 player.setThreeSixes(true);
             }
             else if (!player.isTwoSixes() && dieValue == 6) player.setTwoSixes(true);
@@ -127,7 +159,6 @@ public class SNL extends GameLogic {
         if(dieValue!=6 && !player.isThreeSixes()) playerTurn++; // Update player turn
         if(playerTurn==super.getPlayers().size()) {
             playerTurn = 0;
-//            super.setRound(super.getRound()+1);
         }
         super.setPlayerTurn(playerTurn);
         bonusLadders.removeIf(ladder -> ladder.getLife() == 0);
