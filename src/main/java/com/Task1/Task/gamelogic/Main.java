@@ -11,8 +11,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
+class thread1 implements Runnable{
+    @Override
+    public void run() {
+        // TODO Auto-generated method stub
+    }
+}
+
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         Game game = new Game();
         game.setGametype(new GameType("SNL"));
         game.setBetAmount(100);
@@ -24,7 +31,10 @@ public class Main {
         game.setPlayers(players);
 
         GamePlayer player = new GamePlayer(game);
-        LinkedHashMap<PlayerDTO, Integer> winners = player.startSNL();
-        System.out.println(winners);
+        while(true) {
+            Thread.sleep(1000);
+            LinkedHashMap<PlayerDTO, Integer> winners = player.startSNL();
+            System.out.println(winners);
+        }
     }
 }

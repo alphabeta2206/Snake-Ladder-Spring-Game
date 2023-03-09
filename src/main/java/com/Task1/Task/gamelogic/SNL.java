@@ -13,6 +13,7 @@ public class SNL extends GameLogic {
 
     public SNL(List<PlayerDTO> players, double pricePool) {
         super(players, pricePool);
+        bonusLadders = new ArrayList<BonusLadderDTO>();
 
         Random random = new Random();
         snakes = new HashMap<>();
@@ -53,14 +54,25 @@ public class SNL extends GameLogic {
         BonusLadderDTO bonusLadder = new BonusLadderDTO();
 
         for(BonusLadderDTO ladder: bonusLadders){
-            if (ladder.getLadderStart() > currentPlayerPosition && ladder.getLadderStart() < currentPlayerPosition + 6){ return; }
+            if (ladder.getLadderStart() > currentPlayerPosition && ladder.getLadderStart() < currentPlayerPosition + 6){
+                ladder.setLife(ladder.getLife() + 1);
+                return;
+            }
         }
-        int ladderStart = rand.nextInt(currentPlayerPosition, currentPlayerPosition + 6);
+        boolean flag = true;
+        int ladderStart = 0;
+        while(flag) {
+            ladderStart = rand.nextInt(currentPlayerPosition, currentPlayerPosition + 6);
+            if(ladders.containsKey(ladderStart) || snakes.containsKey(ladderStart))continue;
+            flag = false;
+        }
+
         int startLevel = ladderStart % 8;
         int endLevel = Math.min(startLevel + 3, 8);
         int ladderEnd = rand.nextInt((endLevel - 1) * 8 + 1, endLevel * 8 + 1);
         bonusLadder.setLadderStart(ladderStart);
         bonusLadder.setLadderEnd(ladderEnd);
+        bonusLadder.setLife(super.getPlayers().size());
         this.bonusLadders.add(bonusLadder);
     }
 
@@ -72,6 +84,9 @@ public class SNL extends GameLogic {
         PlayerDTO player = super.getPlayers().get(playerTurn);
         int nextPosition = player.getPosition() + dieValue;
 
+        bonusLadders.forEach(ladder -> ladder.setLife(ladder.getLife() - 1));
+
+
         if (snakes.containsKey(nextPosition)) {
             nextPosition = snakes.get(nextPosition);
         } else if (ladders.containsKey(nextPosition)) {
@@ -81,6 +96,16 @@ public class SNL extends GameLogic {
                 if (bonusLadder.getLadderStart() == nextPosition) nextPosition = bonusLadder.getLadderEnd();
             }
         }
+
+        if(player.getPrevRoll() == 6 && !player.isThreeSixes())  {
+            if(isPrime(dieValue + 6)) generateBonusLadder(nextPosition); // generate bonus ladder
+            if(player.isTwoSixes() && dieValue == 6) {
+                player.setTwoSixes(false);
+                player.setThreeSixes(true);
+            }
+            else if (!player.isTwoSixes() && dieValue == 6) player.setTwoSixes(true);
+        }
+        else player.setThreeSixes(false);
 
         if (nextPosition<64){ // still playing
             player.setPosition(nextPosition);
@@ -95,16 +120,17 @@ public class SNL extends GameLogic {
             super.getPlayers().set(playerTurn, player);
             this.updateWinnerList(player); // player won
             super.updateGameState(player);
-            playerTurn--;
+            if(playerTurn > 0) playerTurn--;
         }
-        bonusLadders.forEach(ladder -> ladder.setLife(ladder.getLife() - 1));
-        bonusLadders.removeIf(ladder -> ladder.getLife() == 0);
-        playerTurn++;  // Update player turn
+
+
+        if(dieValue!=6 && !player.isThreeSixes()) playerTurn++; // Update player turn
         if(playerTurn==super.getPlayers().size()) {
             playerTurn = 0;
 //            super.setRound(super.getRound()+1);
         }
         super.setPlayerTurn(playerTurn);
+        bonusLadders.removeIf(ladder -> ladder.getLife() == 0);
     }
 
     @Override
