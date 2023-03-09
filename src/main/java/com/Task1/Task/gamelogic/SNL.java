@@ -76,6 +76,10 @@ public class SNL extends GameLogic {
             nextPosition = snakes.get(nextPosition);
         } else if (ladders.containsKey(nextPosition)) {
             nextPosition = ladders.get(nextPosition);
+        } else {
+            for (BonusLadderDTO bonusLadder : bonusLadders) {
+                if (bonusLadder.getLadderStart() == nextPosition) nextPosition = bonusLadder.getLadderEnd();
+            }
         }
 
         if (nextPosition<64){ // still playing
@@ -93,11 +97,12 @@ public class SNL extends GameLogic {
             super.updateGameState(player);
             playerTurn--;
         }
-
+        bonusLadders.forEach(ladder -> ladder.setLife(ladder.getLife() - 1));
+        bonusLadders.removeIf(ladder -> ladder.getLife() == 0);
         playerTurn++;  // Update player turn
-         if(playerTurn==super.getPlayers().size()) {
+        if(playerTurn==super.getPlayers().size()) {
             playerTurn = 0;
-//        super.setRound(super.getRound()+1);
+//            super.setRound(super.getRound()+1);
         }
         super.setPlayerTurn(playerTurn);
     }
