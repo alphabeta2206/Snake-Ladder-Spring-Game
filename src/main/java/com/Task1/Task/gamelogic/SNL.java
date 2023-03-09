@@ -3,11 +3,12 @@ package com.Task1.Task.gamelogic;
 import com.Task1.Task.dto.PlayerDTO;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class SNL extends GameLogic {
     private HashMap<Integer, Integer> snakes; // Key = head, value = tail
     private HashMap<Integer, Integer> ladders; // Key = bottom, value = top
-    private HashMap<Integer, Integer> bonusLadder;
+    private HashMap<Integer, Integer> bonusLadders;
     private HashMap<Integer, Integer> bonusSnake;
 
     public SNL(List<PlayerDTO> players, double pricePool) {
@@ -37,11 +38,35 @@ public class SNL extends GameLogic {
         }
     }
 
+    public boolean isPrime(int no) {
+        int count = 0;
+        for (int i = 1; i <= no; i++) {
+            if (no % i == 0)
+                count++;
+        }
+        return count == 2;
+    }
+
+    public void generateBonusLadder(int currentPlayerPosition) {
+        // Generating to two levels above
+        Random rand = new Random();
+        for (int i = currentPlayerPosition + 1; i <= currentPlayerPosition + 6; i++) {
+            if (bonusLadders.containsKey(i)) {
+                return;
+            }
+        }
+        int ladderStart = rand.nextInt(currentPlayerPosition, currentPlayerPosition + 6);
+        int startLevel = ladderStart % 8;
+        int endLevel = Math.min(startLevel + 3, 8);
+        int ladderEnd = rand.nextInt((endLevel - 1) * 8 + 1, endLevel * 8 + 1);
+        bonusLadders.put(ladderStart, ladderEnd);
+    }
+
     @Override
     public void rollDie() {
         super.setTotalMoves(super.getTotalMoves() + 1);
         int dieValue = super.getDice().getValue();
-        int playerTurn = super.getPlayerTurn() % super.getPlayers().size();
+        int playerTurn = super.getPlayerTurn();
         PlayerDTO player = super.getPlayers().get(playerTurn);
         int nextPosition = player.getPosition() + dieValue;
 
@@ -50,30 +75,48 @@ public class SNL extends GameLogic {
         } else if (ladders.containsKey(nextPosition)) {
             nextPosition = ladders.get(nextPosition);
         }
-        System.out.println(getPlayers());
-        player.setPosition(nextPosition);
-        player.setMoves(player.getMoves() + 1);
-        player.setPrevRoll(dieValue);
-        super.getPlayers().set(playerTurn, player);
-        System.out.println(getPlayers());
+
+        if (nextPosition<64){ // still playing
+            player.setPosition(nextPosition);
+            player.setMoves(player.getMoves() + 1);
+            player.setPrevRoll(dieValue);
+            super.getPlayers().set(playerTurn, player);
+        }
+        else {
+            player.setPosition(nextPosition);
+            player.setMoves(player.getMoves() + 1);
+            player.setPrevRoll(dieValue);
+            super.getPlayers().set(playerTurn, player);
+            this.updateWinnerList(player); // player won
+            super.updateGameState(player);
+            playerTurn--;
+        }
+
+        playerTurn++;  // Update player turn
+         if(playerTurn==super.getPlayers().size()) {
+            playerTurn = 0;
+//        super.setRound(super.getRound()+1);
+        }
+        super.setPlayerTurn(playerTurn);
     }
 
     @Override
     public void calculatePayout() {
-        super.getPlayers().forEach(player -> player.setPayout(getPayoutMultiplier(super.getWinnerList().get(player)) * super.getPricePool()));
+        super.getWinnerList().forEach((player, value) -> player.setPayout(getPayoutMultiplier(value) * super.getPricePool()));
+//        super.getWinnerList().entrySet().forEach(player -> player.getKey()setPayout(getPayoutMultiplier(super.getWinnerList().get(player)) * super.getPricePool()));
     }
 
     @Override
     public double getPayoutMultiplier(int winNum) {
-        int playerCount = super.getPlayers().size();
+        int playerCount = super.getWinnerList().size() + 1;
         if (playerCount == 2) {
             if (winNum == 0) return 1;
         } else if (playerCount == 3) {
-            if (winNum== 0) return 0.6;
+            if (winNum == 0) return 0.6;
             else if (winNum == 1) return 0.4;
         } else if (playerCount == 4) {
             if (winNum == 0) return 0.5;
-            else if (winNum== 1) return 0.3;
+            else if (winNum == 1) return 0.3;
             else if (winNum == 2) return 0.2;
         }
         return 0;
@@ -82,6 +125,7 @@ public class SNL extends GameLogic {
     @Override
     public void updateWinnerList(PlayerDTO player) {
         super.setPlayersWon(super.getPlayersWon() + 1);
-        super.getWinnerList().put(player, super.getPlayersWon());
+        super.getWinnerList().put(player, super.getPlayersWon() - 1);
+//        System.out.println(getWinnerList());
     }
 }

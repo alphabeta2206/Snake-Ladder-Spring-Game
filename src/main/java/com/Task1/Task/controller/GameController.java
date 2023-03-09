@@ -1,5 +1,6 @@
 package com.Task1.Task.controller;
 
+import com.Task1.Task.dto.GameDTO;
 import com.Task1.Task.enums.CancelReason;
 import com.Task1.Task.enums.GameStatus;
 import com.Task1.Task.exceptions.GameException;
@@ -54,6 +55,25 @@ public class GameController {
         game.setAssignGameName(gamename);
         game.setGameStatus(GameStatus.NEW);
         game.getPlayers().add(user);
+        gameService.saveGame(game);
+        return "Game Created";
+    }
+
+    @RequestMapping("/creategame")
+    @ResponseBody
+    public String createGame(@RequestBody GameDTO gameDTO, Principal principal){
+        User user = userService.getByUsername(principal.getName());
+        Role role = new Role("ROLE_ADMIN");
+        user.getRoles().add(role);
+        user.setRoles(user.getRoles());
+        Game game = new Game();
+        game.setGametype(new GameType(gameDTO.getGameType()));
+        game.setGameStartTime(new Timestamp(System.currentTimeMillis()));
+        game.setCreator(user);
+        game.setAssignGameName(gameDTO.getGameName());
+        game.setGameStatus(GameStatus.NEW);
+        game.getPlayers().add(user);
+        game.setBetAmount(gameDTO.getBetAmount());
         gameService.saveGame(game);
         return "Game Created";
     }

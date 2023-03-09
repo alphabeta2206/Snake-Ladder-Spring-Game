@@ -3,10 +3,7 @@ package com.Task1.Task.gamelogic;
 import com.Task1.Task.dto.PlayerDTO;
 import lombok.Data;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Data
 public abstract class GameLogic {
@@ -16,12 +13,12 @@ public abstract class GameLogic {
     private int totalMoves;
     private double pricePool;
     private int playersWon;
-    private Map<PlayerDTO, Integer> winnerList;
+    private LinkedHashMap<PlayerDTO, Integer> winnerList;
 
     public GameLogic(List<PlayerDTO> players, double pricePool) {
         this.players = players;
         this.pricePool = pricePool;
-        this.winnerList = new HashMap<>();
+        this.winnerList = new LinkedHashMap<>();
         Collections.shuffle(this.players);
         dice = new Dice(6);
         playerTurn = 0;
