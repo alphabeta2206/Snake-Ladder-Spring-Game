@@ -9,6 +9,7 @@ import com.Task1.Task.service.BetService;
 import com.Task1.Task.service.CurrencyService;
 import com.Task1.Task.service.GameService;
 import com.Task1.Task.service.UserService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -17,6 +18,8 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -79,9 +82,11 @@ public class GameController {
 //    }
 
     @RequestMapping("/startgame/{gid}")
-    public void startGame(@PathVariable Long gid) {
+    @ResponseBody
+    public String startGame(@PathVariable Long gid, HttpSession session) {
         Game game = gameService.getById(gid);
         Set<User> playerList = game.getPlayers();
+        HashMap<User, Bet> bets = new HashMap<>();
         if (playerList.size() > 1) {
             game.setGameStatus(GameStatus.IN_PROGRESS);
             gameService.saveGame(game);
@@ -93,10 +98,13 @@ public class GameController {
                 bet.setPlaceTime(Timestamp.from(Instant.now()));
                 bet.setGameId(game.getId());
                 bet.setUserId(user.getId());
-                betService.saveBet(bet);
+                bets.put(user, bet);
+//                betService.saveBet(bet);
                 userService.saveUser(user);
             });
+            session.setAttribute("playerBets", bets);
         }else throw new GameException("Minimum of Two Players required to start game");
+        return "Game Started";
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -119,7 +127,8 @@ public class GameController {
     }
 
     @GetMapping("/joingame/{gid}")
-    public void joinGame(@PathVariable Long gid, Principal principal) {
+    @ResponseBody
+    public String joinGame(@PathVariable Long gid, Principal principal) {
         Game game = gameService.getById(gid);
         if (game.getGameStatus() == GameStatus.NEW) {
             User user = userService.getByUsername(principal.getName());
@@ -127,17 +136,20 @@ public class GameController {
         }else if (game.getGameStatus() == GameStatus.IN_PROGRESS) throw new GameException("Game Already In Progress");
         else throw new GameException("Game Already Cancelled");
         gameService.saveGame(game);
+        return "Joined Game";
     }
 
     @RequestMapping("/endgame/{gid}/{payout}")
     @ResponseBody
-    public void endGame(@PathVariable Long gid, @PathVariable double payout) {
+    public void endGame(@PathVariable Long gid, @PathVariable double payout, HttpSession session) {
         Game game = gameService.getById(gid);
         Set<User> playerList = game.getPlayers();
         if (game.getGameStatus() == GameStatus.IN_PROGRESS) {
             gameService.saveGame(game);
+            HashMap<User, Bet> bets = (HashMap<User, Bet>) session.getAttribute("playerBets");
             playerList.forEach(user -> {
-                Bet bet = betService.getByUserId(user.getId());
+//                Bet bet = betService.getByUserId(user.getId());
+                Bet bet = bets.get(user);
                 double multiplier = currencyService.getMultiplier(user.getCurrencyCode());
                 bet.setPayOff(payout);
                 user.setWalletAmt(user.getWalletAmt() + payout * multiplier);
