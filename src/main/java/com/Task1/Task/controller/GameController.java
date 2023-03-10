@@ -59,24 +59,24 @@ public class GameController {
         return "Game Created";
     }
 
-    @RequestMapping("/creategame")
-    @ResponseBody
-    public String createGame(@RequestBody GameDTO gameDTO, Principal principal){
-        User user = userService.getByUsername(principal.getName());
-        Role role = new Role("ROLE_ADMIN");
-        user.getRoles().add(role);
-        user.setRoles(user.getRoles());
-        Game game = new Game();
-        game.setGametype(new GameType(gameDTO.getGameType()));
-        game.setGameStartTime(new Timestamp(System.currentTimeMillis()));
-        game.setCreator(user);
-        game.setAssignGameName(gameDTO.getGameName());
-        game.setGameStatus(GameStatus.NEW);
-        game.getPlayers().add(user);
-        game.setBetAmount(gameDTO.getBetAmount());
-        gameService.saveGame(game);
-        return "Game Created";
-    }
+//    @RequestMapping("/creategame")
+//    @ResponseBody
+//    public String createGame(@RequestBody GameDTO gameDTO, Principal principal){
+//        User user = userService.getByUsername(principal.getName());
+//        Role role = new Role("ROLE_ADMIN");
+//        user.getRoles().add(role);
+//        user.setRoles(user.getRoles());
+//        Game game = new Game();
+//        game.setGametype(new GameType(gameDTO.getGameType()));
+//        game.setGameStartTime(new Timestamp(System.currentTimeMillis()));
+//        game.setCreator(user);
+//        game.setAssignGameName(gameDTO.getGameName());
+//        game.setGameStatus(GameStatus.NEW);
+//        game.getPlayers().add(user);
+//        game.setBetAmount(gameDTO.getBetAmount());
+//        gameService.saveGame(game);
+//        return "Game Created";
+//    }
 
     @RequestMapping("/startgame/{gid}")
     public void startGame(@PathVariable Long gid) {

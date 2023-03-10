@@ -7,8 +7,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class UserService extends UserInfoService {
-    @Autowired
-    UserRepo userRepo;
 
     public void saveUser(User user) {
         userRepository.save(user);

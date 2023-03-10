@@ -1,5 +1,6 @@
 package com.Task1.Task.controller;
 
+import com.Task1.Task.dto.UserRegistrationDTO;
 import com.Task1.Task.model.Role;
 import com.Task1.Task.model.User;
 import com.Task1.Task.service.UserService;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import javax.swing.*;
 import java.util.List;
 
 @Controller
@@ -39,7 +41,7 @@ public class HomeController {
     }
 
     @PostMapping("/process_register")
-    public String processRegister(@RequestParam String username, @RequestParam String name, @RequestParam String password, @RequestParam long walletAmt, @RequestParam String currencyCode) {
+    public String processRegister(@RequestParam String username, @RequestParam String name, @RequestParam String password, @RequestParam Double walletAmt, @RequestParam String currencyCode) {
         User user = new User();
         user.setUserName(username);
         user.setName(name);
