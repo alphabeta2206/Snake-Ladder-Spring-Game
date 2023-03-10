@@ -11,6 +11,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.swing.*;
+import java.security.Principal;
 import java.util.List;
 
 @Controller
@@ -53,6 +54,9 @@ public class HomeController {
         userService.saveUser(user);
         return "redirect:/login";
     }
+
+
+
 
     @GetMapping("/logout")
     public String logout() {
