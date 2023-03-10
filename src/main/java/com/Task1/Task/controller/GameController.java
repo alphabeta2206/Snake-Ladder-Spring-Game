@@ -11,8 +11,6 @@ import com.Task1.Task.service.GameService;
 import com.Task1.Task.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Controller
 public class GameController {
@@ -48,7 +47,7 @@ public class GameController {
 
     @RequestMapping("/creategame/{gametype}/{gamename}/{betamount}")
     @ResponseBody
-    public ResponseEntity<Game> createGame(@PathVariable String gametype, @PathVariable String gamename, Principal principal) {
+    public String createGame(@PathVariable String gametype, @PathVariable String gamename, Principal principal) {
         User user = userService.getByUsername(principal.getName());
         Role role = new Role("ROLE_ADMIN");
         user.getRoles().add(role);
@@ -60,7 +59,8 @@ public class GameController {
         game.setAssignGameName(gamename);
         game.setGameStatus(GameStatus.NEW);
         game.getPlayers().add(user);
-        return new ResponseEntity<Game>( gameService.saveGame( game ) , HttpStatus.CREATED ) ;
+        gameService.saveGame(game);
+        return "Game Created";
     }
 
 //    @RequestMapping("/creategame")
@@ -87,7 +87,7 @@ public class GameController {
     public String startGame(@PathVariable Long gid, HttpSession session) {
         Game game = gameService.getById(gid);
         Set<User> playerList = game.getPlayers();
-        HashMap<User, Bet> bets = new HashMap<>();
+        HashMap<Long, Bet> bets = new HashMap<>();
         if (playerList.size() > 1) {
             game.setGameStatus(GameStatus.IN_PROGRESS);
             gameService.saveGame(game);
@@ -99,8 +99,7 @@ public class GameController {
                 bet.setPlaceTime(Timestamp.from(Instant.now()));
                 bet.setGameId(game.getId());
                 bet.setUserId(user.getId());
-                bets.put(user, bet);
-//                betService.saveBet(bet);
+                bets.put(user.getId(), bet);
                 userService.saveUser(user);
             });
             session.setAttribute("playerBets", bets);
@@ -110,7 +109,7 @@ public class GameController {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @RequestMapping("/cancelgame/{gid}")
-    public void deleteGame(@PathVariable long gid) {
+    public String deleteGame(@PathVariable long gid) {
         Game game = gameService.getById(gid);
         Set<User> playerList = game.getPlayers();
         if (game.getGameStatus() == GameStatus.IN_PROGRESS || game.getGameStatus() == GameStatus.NEW) {
@@ -125,6 +124,7 @@ public class GameController {
         game.setGameStatus(GameStatus.COMPLETED);
         game.setCancelReason(CancelReason.USER_CANCELLED);
         gameService.saveGame(game);
+        return "Canncelled Game";
     }
 
     @GetMapping("/joingame/{gid}")
@@ -142,15 +142,14 @@ public class GameController {
 
     @RequestMapping("/endgame/{gid}/{payout}")
     @ResponseBody
-    public void endGame(@PathVariable Long gid, @PathVariable double payout, HttpSession session) {
+    public String endGame(@PathVariable Long gid, @PathVariable double payout, HttpSession session) {
         Game game = gameService.getById(gid);
         Set<User> playerList = game.getPlayers();
         if (game.getGameStatus() == GameStatus.IN_PROGRESS) {
             gameService.saveGame(game);
-            HashMap<User, Bet> bets = (HashMap<User, Bet>) session.getAttribute("playerBets");
+            HashMap<Long, Bet> bets = (HashMap<Long, Bet>) session.getAttribute("playerBets");
             playerList.forEach(user -> {
-//                Bet bet = betService.getByUserId(user.getId());
-                Bet bet = bets.get(user);
+                Bet bet = bets.get(user.getId());
                 double multiplier = currencyService.getMultiplier(user.getCurrencyCode());
                 bet.setPayOff(payout);
                 user.setWalletAmt(user.getWalletAmt() + payout * multiplier);
@@ -162,5 +161,7 @@ public class GameController {
             gameService.saveGame(game);
         }
         else throw new GameException("Game Already Ended");
+
+        return "Success";
     }
 }

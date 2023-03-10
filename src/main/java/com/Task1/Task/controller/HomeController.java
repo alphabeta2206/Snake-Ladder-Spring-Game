@@ -57,7 +57,6 @@ public class HomeController {
         return "redirect:/login";
     }
 
-
     @GetMapping("/profile")
     public ResponseEntity<User> getProfile(Principal principal ) {
         return new ResponseEntity<User>( userService.getByUsername( principal.getName() ) , HttpStatus.OK ) ;
