@@ -13,8 +13,8 @@ public class GameService {
     @Autowired
     GameRepository gameRepository;
 
-    public void saveGame(Game game) {
-        gameRepository.save(game);
+    public Game saveGame(Game game) {
+        return gameRepository.save(game);
     }
 
     public Game getById(Long id) {

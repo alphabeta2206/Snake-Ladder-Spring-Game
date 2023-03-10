@@ -10,6 +10,8 @@ import com.Task1.Task.service.CurrencyService;
 import com.Task1.Task.service.GameService;
 import com.Task1.Task.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -43,7 +45,7 @@ public class GameController {
 
     @RequestMapping("/creategame/{gametype}/{gamename}/{betamount}")
     @ResponseBody
-    public String createGame(@PathVariable String gametype, @PathVariable String gamename, Principal principal) {
+    public ResponseEntity<Game> createGame(@PathVariable String gametype, @PathVariable String gamename, Principal principal) {
         User user = userService.getByUsername(principal.getName());
         Role role = new Role("ROLE_ADMIN");
         user.getRoles().add(role);
@@ -55,8 +57,7 @@ public class GameController {
         game.setAssignGameName(gamename);
         game.setGameStatus(GameStatus.NEW);
         game.getPlayers().add(user);
-        gameService.saveGame(game);
-        return "Game Created";
+        return new ResponseEntity<Game>( gameService.saveGame( game ) , HttpStatus.CREATED ) ;
     }
 
 //    @RequestMapping("/creategame")
