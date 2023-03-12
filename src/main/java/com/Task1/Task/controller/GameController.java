@@ -85,7 +85,9 @@ public class GameController {
     @RequestMapping("/startgame/{gid}")
     @ResponseBody
     public String startGame(@PathVariable Long gid, HttpSession session) {
+
         Game game = gameService.getById(gid);
+        if( game.getGameStatus() == GameStatus.IN_PROGRESS )return "Game already started" ;
         Set<User> playerList = game.getPlayers();
         HashMap<Long, Bet> bets = new HashMap<>();
         if (playerList.size() > 1) {
