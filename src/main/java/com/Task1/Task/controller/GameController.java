@@ -47,7 +47,7 @@ public class GameController {
 
     @RequestMapping("/creategame/{gametype}/{gamename}/{betamount}")
     @ResponseBody
-    public String createGame(@PathVariable String gametype, @PathVariable String gamename, Principal principal) {
+    public String createGame(@PathVariable String gametype, @PathVariable String gamename, @PathVariable String betamount , Principal principal) {
         User user = userService.getByUsername(principal.getName());
         Role role = new Role("ROLE_ADMIN");
         user.getRoles().add(role);
@@ -59,6 +59,7 @@ public class GameController {
         game.setAssignGameName(gamename);
         game.setGameStatus(GameStatus.NEW);
         game.getPlayers().add(user);
+        game.setBetAmount( Double.parseDouble( betamount ) );
         gameService.saveGame(game);
         return "Game Created";
     }
