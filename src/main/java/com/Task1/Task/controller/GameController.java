@@ -19,11 +19,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.security.Security;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Controller
 public class GameController {
@@ -167,6 +166,7 @@ public class GameController {
                 betService.saveBet(bet, user, multiplier);
             });
             game.setGameStatus(GameStatus.COMPLETED);
+            game.setPlayers(new HashSet<User>());
             gameService.saveGame(game);
         }
         else throw new GameException("Game Already Ended");
