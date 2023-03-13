@@ -93,7 +93,6 @@ public class GameController {
 
         Game game = gameService.getById(gid);
 
-
         if( game.getGameStatus() == GameStatus.IN_PROGRESS )return "Game already started" ;
         Set<User> playerList = game.getPlayers();
         HashMap<Long, Bet> bets = new HashMap<>();
@@ -121,7 +120,7 @@ public class GameController {
         return "Game Started";
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("ROLE_ADMIN")
     @RequestMapping("/cancelgame/{gid}")
     public ResponseEntity<String > deleteGame(@PathVariable long gid , Principal principal ) {
         Game game = gameService.getById(gid);
@@ -172,8 +171,8 @@ public class GameController {
                 Bet bet = bets.get(user.getId());
                 double multiplier = currencyService.getMultiplier(user.getCurrencyCode());
                 bet.setPayOff(payout);
-                user.setWalletAmt(user.getWalletAmt() - (Double)( session.getAttribute("betAmount") ) / multiplier );
-                user.setWalletAmt(user.getWalletAmt() + payout / multiplier);
+                user.setWalletAmt(user.getWalletAmt() - (Double)( session.getAttribute("betAmount") ) / multiplier + payout / multiplier );
+                //user.setWalletAmt(user.getWalletAmt() + payout / multiplier);
                 bet.setSettleTime(Timestamp.from(Instant.now()));
                 bet.setStatus('S');
                 betService.saveBet(bet);
