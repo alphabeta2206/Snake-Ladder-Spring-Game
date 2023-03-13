@@ -1,6 +1,8 @@
 package com.Task1.Task.service;
 
+import com.Task1.Task.events.publishers.EventPublisher;
 import com.Task1.Task.model.Bet;
+import com.Task1.Task.model.User;
 import com.Task1.Task.repository.BetRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,8 +11,14 @@ import org.springframework.stereotype.Service;
 public class BetService {
     @Autowired
     BetRepository betRepository;
+    @Autowired
+    EventPublisher eventPublisher;
 
-    public void saveBet(Bet bet) {
+    public void saveBet(Bet bet) { betRepository.save(bet); }
+
+    public void saveBet(Bet bet, User user, double multiplier) {
+        double amount = user.getWalletAmt() - bet.getAmount() / multiplier;
+        eventPublisher.publishTransaction(user, amount); // publish event
         betRepository.save(bet);
     }
 

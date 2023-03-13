@@ -102,13 +102,11 @@ public class GameController {
                 double multiplier = currencyService.getMultiplier(user.getCurrencyCode());
                 Bet bet = new Bet();
                 bet.setAmount(game.getBetAmount());
-                double amount = user.getWalletAmt() - (game.getBetAmount() * multiplier);
                 bet.setPlaceTime(Timestamp.from(Instant.now()));
                 bet.setGameId(game.getId());
                 bet.setUserId(user.getId());
                 bets.put(user.getId(), bet);
-                eventPublisher.publishTransaction(user, amount); // event publisher
-                betService.saveBet( bet );
+                betService.saveBet(bet, user, multiplier);
             });
             session.setAttribute("playerBets", bets);
             session.setAttribute("betAmount" , game.getBetAmount() );
@@ -164,13 +162,9 @@ public class GameController {
                 Bet bet = bets.get(user.getId());
                 double multiplier = currencyService.getMultiplier(user.getCurrencyCode());
                 bet.setPayOff(payout);
-                double amount = payout / multiplier;
-                eventPublisher.publishTransaction(user, amount);
                 bet.setSettleTime(Timestamp.from(Instant.now()));
                 bet.setStatus('S');
-                betService.saveBet(bet);
-//                userService.saveUser( user );
-                eventPublisher.publishTransaction(user, amount); // publish event
+                betService.saveBet(bet, user, multiplier);
             });
             game.setGameStatus(GameStatus.COMPLETED);
             gameService.saveGame(game);
