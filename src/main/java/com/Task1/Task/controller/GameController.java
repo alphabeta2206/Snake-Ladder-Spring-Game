@@ -90,10 +90,7 @@ public class GameController {
     @ResponseBody
     @PreAuthorize("ROLE_ADMIN")
     public String startGame(@PathVariable Long gid, HttpSession session , Principal principal ) {
-
         Game game = gameService.getById(gid);
-
-
         if( game.getGameStatus() == GameStatus.IN_PROGRESS )return "Game already started" ;
         Set<User> playerList = game.getPlayers();
         HashMap<Long, Bet> bets = new HashMap<>();
@@ -104,14 +101,12 @@ public class GameController {
                 double multiplier = currencyService.getMultiplier(user.getCurrencyCode());
                 Bet bet = new Bet();
                 bet.setAmount(game.getBetAmount());
-                // It should be divide by multiplier because multiplier is to convert any currency to euro
-                // but here , converting euro to other currency
-                //user.setWalletAmt(user.getWalletAmt() - (game.getBetAmount() * multiplier));
+                user.setWalletAmt(user.getWalletAmt() - (game.getBetAmount() * multiplier));
                 bet.setPlaceTime(Timestamp.from(Instant.now()));
                 bet.setGameId(game.getId());
                 bet.setUserId(user.getId());
                 bets.put(user.getId(), bet);
-                //userService.saveUser(user);
+                userService.saveUser(user);
                 betService.saveBet( bet );
 
             });
