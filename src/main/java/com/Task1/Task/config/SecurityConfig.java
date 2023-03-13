@@ -8,6 +8,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -26,7 +27,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
+                http
                 .authenticationProvider(authenticationProvider())
                 .csrf().disable()
                 .authorizeHttpRequests()
@@ -44,7 +45,12 @@ public class SecurityConfig {
                 .logoutUrl("/perform_logout")
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID")
-                .and().build();
+                .and()
+                .sessionManagement()
+                .maximumSessions(1)
+                .expiredUrl("/login?expired")
+                .sessionRegistry(new SessionRegistryImpl());
+                return http.build();
     }
 
     @Bean

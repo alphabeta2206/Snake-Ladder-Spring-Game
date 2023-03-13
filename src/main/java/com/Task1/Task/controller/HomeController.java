@@ -1,9 +1,14 @@
 package com.Task1.Task.controller;
 
 import com.Task1.Task.dto.UserRegistrationDTO;
+import com.Task1.Task.exceptions.SessionActiveException;
 import com.Task1.Task.model.Role;
 import com.Task1.Task.model.User;
 import com.Task1.Task.service.UserService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.PropertyEditorRegistrar;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,9 +37,9 @@ public class HomeController {
     }
 
     @GetMapping("/login")
-    public String showLoginForm(Model model) {
-        model.addAttribute("user", new User());
-        return "loginForm";
+    public String showLoginForm(HttpSession session) {
+        if(session.getAttribute("sessionVar") == null) return "loginForm";
+        return "redirect:/lobby";
     }
 
     @GetMapping("/register")

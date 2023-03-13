@@ -9,6 +9,8 @@ import com.Task1.Task.service.BetService;
 import com.Task1.Task.service.CurrencyService;
 import com.Task1.Task.service.GameService;
 import com.Task1.Task.service.UserService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +21,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.security.Security;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.*;
@@ -44,7 +45,9 @@ public class GameController {
 
     @RequestMapping("/lobby")
     @ResponseBody
-    public List<Game> lobby() {
+    public List<Game> lobby(HttpServletResponse response, Principal principal) {
+        Cookie cookie = new Cookie("username", principal.getName());
+        response.addCookie(cookie);
         return gameService.gameList();
     }
 
@@ -115,7 +118,7 @@ public class GameController {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @RequestMapping("/cancelgame/{gid}")
-    public ResponseEntity<String > deleteGame(@PathVariable long gid , Principal principal ) {
+    public ResponseEntity<String> deleteGame(@PathVariable long gid , Principal principal ) {
         Game game = gameService.getById(gid);
         Set<User> playerList = game.getPlayers();
         if (game.getGameStatus() == GameStatus.IN_PROGRESS || game.getGameStatus() == GameStatus.NEW) {
@@ -132,7 +135,7 @@ public class GameController {
         game.setGameStatus(GameStatus.COMPLETED);
         game.setCancelReason(CancelReason.USER_CANCELLED);
         gameService.saveGame(game);
-        return new ResponseEntity<String>( "Game Cancelled" ,HttpStatus.OK ) ;
+        return new ResponseEntity<>( "Game Cancelled" ,HttpStatus.OK );
     }
 
     @GetMapping("/joingame/{gid}")
@@ -170,7 +173,6 @@ public class GameController {
             gameService.saveGame(game);
         }
         else throw new GameException("Game Already Ended");
-
         return "Success";
     }
 }
