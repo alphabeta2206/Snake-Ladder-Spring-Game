@@ -88,9 +88,13 @@ public class GameController {
 
     @RequestMapping("/startgame/{gid}")
     @ResponseBody
-    public String startGame(@PathVariable Long gid, HttpSession session) {
+    public String startGame(@PathVariable Long gid, HttpSession session , Principal principal ) {
 
         Game game = gameService.getById(gid);
+        // game can only be started by the user who created it
+        System.out.print( game.getCreator().getUserName()+ " "+ principal.getName() +"\n" );
+        if( ! game.getCreator().getUserName().equalsIgnoreCase( principal.getName() ) )return "You are not authorized to start the game" ;
+
         if( game.getGameStatus() == GameStatus.IN_PROGRESS )return "Game already started" ;
         Set<User> playerList = game.getPlayers();
         HashMap<Long, Bet> bets = new HashMap<>();
