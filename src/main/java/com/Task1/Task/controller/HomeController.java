@@ -4,6 +4,7 @@ import com.Task1.Task.dto.UserRegistrationDTO;
 import com.Task1.Task.model.Role;
 import com.Task1.Task.model.User;
 import com.Task1.Task.service.UserService;
+import jakarta.persistence.SecondaryTable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,10 +15,14 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.swing.*;
 import java.security.Principal;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Controller
 public class HomeController {
+
+    private Set<String> cached = new HashSet<String>();
 
     @Autowired
     UserService userService;
@@ -32,9 +37,12 @@ public class HomeController {
     }
 
     @GetMapping("/login")
-    public String showLoginForm(Model model) {
-        model.addAttribute("user", new User());
-        return "loginForm";
+    public String showLoginForm(Model model , Principal principal ) {
+
+
+        if( principal == null ){ model.addAttribute("user", new User()); return "loginForm"; }
+        return "redirect:/lobby" ;
+
     }
 
     @GetMapping("/register")
