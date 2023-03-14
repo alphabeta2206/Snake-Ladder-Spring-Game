@@ -15,4 +15,11 @@ public class EventPublisher {
         TransactionEvent event = new TransactionEvent(user, amount);
         applicationEventPublisher.publishEvent(event);
     }
+
+    public void publishRollDie(){
+
+    }
+
+    public void publishGameStart(){
+    }
 }

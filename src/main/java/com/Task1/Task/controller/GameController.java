@@ -166,4 +166,11 @@ public class GameController {
         else throw new GameException("Game Already Ended");
         return "Success";
     }
+
+    @RequestMapping("/rolldie/{id}")
+    @ResponseBody
+    public void rollDie(@PathVariable long id, Principal principal){
+        long userId = userService.getByUsername(principal.getName()).getId();
+        eventPublisher.publishRollDie(userId);
+    }
 }
