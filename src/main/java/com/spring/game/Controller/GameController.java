@@ -15,6 +15,7 @@ import com.spring.game.service.BetService;
 import com.spring.game.service.CurrencyService;
 import com.spring.game.service.GameService;
 import com.spring.game.service.UserService;
+import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,9 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 @Controller
@@ -59,7 +63,7 @@ public class GameController {
         User creator = userService.findByUsername(principal.getName());
         double userBalance = currencyService.convertToEuro(creator.getWallet_amt(), creator.getCurrencyCode());
         // Checking if user can create game with given bet amount
-        if(userBalance > gameDTO.getBetAmount()) {
+        if(userBalance > gameDTO.getBetAmount() && !creator.isActive()) {
             // Creating a new game
             creator.setActive(true);
             userService.updateUser(creator);
@@ -97,9 +101,10 @@ public class GameController {
 
     @RequestMapping("/{id}/start")
     @ResponseBody
-    public Game startGame(@PathVariable Long id, Principal principal) {
+    public Game startGame(@PathVariable Long id, Principal principal, HttpSession session) {
         User creator = userService.findByUsername(principal.getName());
         Game game = gameService.findById(id);
+        HashMap<Long, Bet> bets = new HashMap<>();
         if (game.getCreator().equals(creator) && game.getPlayers().size() > 1) {
             game.setGameStatus(GameStatus.IN_PROGRESS);
             Set<User> playerList = game.getPlayers();
@@ -110,15 +115,12 @@ public class GameController {
                 bet.setGameId(game.getId());
                 bet.setPlaceTime(Timestamp.from(Instant.now()));
                 bet.setAmount(currencyService.convertToEuro(game.getBetAmount(), creator.getCurrencyCode()));
-                //Storing bet info
-                betService.saveBet(bet);
-                //Updating user wallet
-                user.setWallet_amt(user.getWallet_amt() - currencyService.convertFromEuro(bet.getAmount(), user.getCurrencyCode()));
-                userService.updateUser(user);
+                bets.put(user.getId(),bet);
             });
+            session.setAttribute("playerBets", bets);
             gameService.updateGame(game);
             eventPublisher.publishStartGame(game);
-            LOGGER.info("GAME DETAILS PUSLISHED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            LOGGER.info("GAME DETAILS PUSLISHED");
             return game;
         }
         else throw new GameException("Only Creator can start the game");
@@ -127,9 +129,11 @@ public class GameController {
 
     @RequestMapping("/{id}/cancelGame")
     @ResponseBody
-    public Game cancelGame(@PathVariable long id, @RequestBody String reason, Principal principal){
+    public Game cancelGame(@PathVariable long id, @RequestBody String reason, Principal principal, HttpSession session){
         Game game = gameService.findById(id);
         User creator = userService.findByUsername(principal.getName());
+        HashMap<Long, Bet> bets = (HashMap<Long, Bet>) session.getAttribute("playerBets");
+        List<Bet> betList = new ArrayList<>();
         if(game.getCreator().equals(creator)) {
             if(game.getGameStatus().equals(GameStatus.NEW)) {
                 game.setCancelReason(CancelReason.valueOf(reason));
@@ -144,16 +148,17 @@ public class GameController {
                 // Updating bet status for every user
                 Set<User> playerList = game.getPlayers();
                 playerList.forEach(user -> {
-                    Bet bet = betService.getOneBet(user.getId(), game.getId());
+                    Bet bet = bets.get(user.getId());
                     bet.setStatus(BetStatus.C);
-                    bet.setPayoff(0);
+                    bet.setPayoff(game.getBetAmount());
                     bet.setSettleTime(Timestamp.from(Instant.now()));
-                    betService.saveBet(bet);
+                    betList.add(bet);
+                    // Set user status
                     user.setActive(false);
-                    //Updating user wallet
-                    user.setWallet_amt(user.getWallet_amt() + currencyService.convertFromEuro(bet.getAmount(), user.getCurrencyCode()));
                     userService.updateUser(user);
                 });
+                // Trigger Cancel Game
+                eventPublisher.publishCancelGame(betList);
                 gameService.updateGame(game);
                 return game;
             }
@@ -162,10 +167,27 @@ public class GameController {
         else throw new GameException("Only creator can end!");
     }
 
+    @RequestMapping("/{id}/simulate-game")
+    @ResponseBody
+    public void simulateGame(@PathVariable long id, Principal principal, HttpSession session){
+        Game game = gameService.findById(id);
+        if(game.getCreator().getUsername().equals(principal.getName())){
+            if(game.getGameStatus().equals(GameStatus.IN_PROGRESS)) {
+                eventPublisher.publishSimulateGame(game,(HashMap<Long, Bet>) session.getAttribute("playerBets") );
+                // Updating Game status
+                game.setGameStatus(GameStatus.COMPLETED);
+                gameService.updateGame(game);
+            }else throw new GameException("Can't Simulate the Game, It has not Started or Already ended!");
+        }else throw new GameException("Only Creator can simulate the game!");
+    }
+
     @RequestMapping("/{id}/roll-die")
     @ResponseBody
     public void rollDie(@PathVariable long id, Principal principal){
-        long userId = userService.findByUsername(principal.getName()).getId();
-        eventPublisher.publishRollDie(userId);
+        Game game = gameService.findById(id);
+        if(game.getGameStatus().equals(GameStatus.IN_PROGRESS)) {
+            long userId = userService.findByUsername(principal.getName()).getId();
+            eventPublisher.publishRollDie(userId, id);
+        }else throw new GameException("Can't Play the game in its current status!");
     }
 }

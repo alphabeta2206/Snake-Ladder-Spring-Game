@@ -23,6 +23,9 @@ public class BetService {
     public void saveBet(Bet bet) {
         betRepo.save(bet);
     }
+    public void saveAllBets(List<Bet> betList) {
+        betRepo.saveAll(betList);
+    }
 
     public Bet getOneBet(long userId, long gameId) {
         return betRepo.findOneBet(userId, gameId);

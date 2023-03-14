@@ -193,7 +193,7 @@ public class SNLGame extends GameLogic {
 
     @Override
     public double getPayoutMultiplier(int winNum) {
-        int playerCount = super.getWinnerList().size() + 1;
+        int playerCount = super.getWinnerList().size();
         if (playerCount == 2) {
             if (winNum == 0) return 1;
         } else if (playerCount == 3) {
