@@ -33,7 +33,7 @@ public class UserService implements UserDetailsService{
             user.setUsername(userRegistrationDetails.getUsername());
             user.setPassword(bCryptPasswordEncoder.encode(userRegistrationDetails.getPassword()));
             user.setWallet_amt(userRegistrationDetails.getWallet_amt());
-            user.setRoles(List.of(new Role(userRegistrationDetails.getRole())));
+            user.setRoles(userRegistrationDetails.getRole().stream().map(Role::new).collect(Collectors.toList()));
             user.setCurrencyCode(userRegistrationDetails.getCurrency());
             user.setActive(false);
             System.out.println(user);

@@ -32,12 +32,4 @@ public class EventPublisher {
         SimulateGameEvent event = new SimulateGameEvent(game, bets);
         appEventPublisher.publishEvent(event);
     }
-    public void publishCancelGame(List<Bet> bets) {
-        CancelGameEvent event = new CancelGameEvent(bets);
-        appEventPublisher.publishEvent(event);
-    }
-    public void publishBetEvent(User user, double amount) {
-        TransactionEvent event = new TransactionEvent(user, amount);
-        appEventPublisher.publishEvent(event);
-    }
 }

@@ -120,7 +120,7 @@ public class GameController {
             session.setAttribute("playerBets", bets);
             gameService.updateGame(game);
             eventPublisher.publishStartGame(game);
-            LOGGER.info("GAME DETAILS PUSLISHED");
+            LOGGER.info("GAME DETAILS PUBLISHED");
             return game;
         }
         else throw new GameException("Only Creator can start the game");
@@ -157,8 +157,7 @@ public class GameController {
                     user.setActive(false);
                     userService.updateUser(user);
                 });
-                // Trigger Cancel Game
-                eventPublisher.publishCancelGame(betList);
+                betService.saveAllBets(betList);
                 gameService.updateGame(game);
                 return game;
             }
