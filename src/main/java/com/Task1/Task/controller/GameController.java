@@ -54,25 +54,6 @@ public class GameController {
         return gameService.gameList();
     }
 
-//    @RequestMapping("/creategame/{gametype}/{gamename}/{betamount}")
-//    @ResponseBody
-//    public String createGame(@PathVariable String gametype, @PathVariable String gamename, @PathVariable String betamount , Principal principal) {
-//        User user = userService.getByUsername(principal.getName());
-//        Role role = new Role("ROLE_ADMIN");
-//        user.getRoles().add(role);
-//        user.setRoles(user.getRoles());
-//        Game game = new Game();
-//        game.setGametype(new GameType(gametype));
-//        game.setGameStartTime(new Timestamp(System.currentTimeMillis()));
-//        game.setCreator(user);
-//        game.setAssignGameName(gamename);
-//        game.setGameStatus(GameStatus.NEW);
-//        game.getPlayers().add(user);
-//        game.setBetAmount( Double.parseDouble( betamount ) );
-//        gameService.saveGame(game);
-//        return "Game Created";
-//    }
-
     @RequestMapping("/creategame")
     @ResponseBody
     public String createGame(@RequestBody GameDTO gameDTO, Principal principal){
@@ -110,7 +91,6 @@ public class GameController {
                 gamePlayer.startLudo();
             }
             gameService.saveGame(game);
-            // event publisher
             playerList.forEach(user -> {
                 double multiplier = currencyService.getMultiplier(user.getCurrencyCode());
                 Bet bet = new Bet();
