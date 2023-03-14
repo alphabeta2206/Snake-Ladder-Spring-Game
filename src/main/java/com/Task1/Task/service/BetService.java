@@ -19,7 +19,7 @@ public class BetService {
     public void saveBet(Bet bet, User user, double multiplier) {
         double amount = user.getWalletAmt() - bet.getAmount() / multiplier;
         eventPublisher.publishTransaction(user, amount); // publish event
-        betRepository.save(bet);
+            betRepository.save(bet);
     }
 
     public Bet getByBetId(Long betId) {
