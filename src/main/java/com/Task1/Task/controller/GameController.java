@@ -84,13 +84,6 @@ public class GameController {
         if (playerList.size() > 1) {
             game.setGameStatus(GameStatus.IN_PROGRESS);
             GamePlayer gamePlayer = new GamePlayer(game);
-            if (game.getGametype().getGameName().equals("SNL")) {
-                LinkedHashMap<PlayerDTO, Integer> result = gamePlayer.startSNL();
-            }
-            else{
-                gamePlayer.startLudo();
-            }
-            gameService.saveGame(game);
             playerList.forEach(user -> {
                 double multiplier = currencyService.getMultiplier(user.getCurrencyCode());
                 Bet bet = new Bet();
@@ -102,7 +95,8 @@ public class GameController {
                 betService.saveBet(bet);
             });
             session.setAttribute("playerBets", bets);
-            session.setAttribute("betAmount" , game.getBetAmount() );
+            session.setAttribute("betAmount" , game.getBetAmount());
+            eventPublisher.publishStartGame(game);
         }else throw new GameException("Minimum of Two Players required to start game");
         return "Game Started";
     }
@@ -173,4 +167,12 @@ public class GameController {
         long userId = userService.getByUsername(principal.getName()).getId();
         eventPublisher.publishRollDie(userId);
     }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @RequestMapping("/simulategame")
+    public void simulateGame(){
+
+    }
+
+
 }

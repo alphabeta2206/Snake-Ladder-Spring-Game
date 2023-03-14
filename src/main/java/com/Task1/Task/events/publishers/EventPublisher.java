@@ -1,6 +1,9 @@
 package com.Task1.Task.events.publishers;
 
+import com.Task1.Task.events.RollDieEvent;
+import com.Task1.Task.events.StartGameEvent;
 import com.Task1.Task.events.TransactionEvent;
+import com.Task1.Task.model.Game;
 import com.Task1.Task.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -16,10 +19,13 @@ public class EventPublisher {
         applicationEventPublisher.publishEvent(event);
     }
 
-    public void publishRollDie(){
-
+    public void publishStartGame(Game game) {
+        StartGameEvent event = new StartGameEvent(this, game);
+        applicationEventPublisher.publishEvent(event);
     }
 
-    public void publishGameStart(){
+    public void publishRollDie(long userId) {
+        RollDieEvent event = new RollDieEvent(userId);
+        applicationEventPublisher.publishEvent(event);
     }
 }
