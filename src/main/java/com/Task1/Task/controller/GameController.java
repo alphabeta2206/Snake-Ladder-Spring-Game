@@ -96,7 +96,7 @@ public class GameController {
             });
             session.setAttribute("playerBets", bets);
             session.setAttribute("betAmount" , game.getBetAmount());
-            eventPublisher.publishStartGame(game);
+            eventPublisher.publishStartGame(game); // publish game start
         }else throw new GameException("Minimum of Two Players required to start game");
         return "Game Started";
     }
@@ -169,10 +169,10 @@ public class GameController {
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @RequestMapping("/simulategame")
-    public void simulateGame(){
+    @RequestMapping("/simulategame/{gid}")
+    public void simulateGame(@PathVariable long gid){
+        Game game = gameService.getById(gid);
+
 
     }
-
-
 }

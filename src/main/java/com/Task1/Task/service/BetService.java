@@ -7,6 +7,8 @@ import com.Task1.Task.repository.BetRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class BetService {
     @Autowired
@@ -19,7 +21,10 @@ public class BetService {
     public void saveBet(Bet bet, User user, double multiplier) {
         double amount = user.getWalletAmt() - bet.getAmount() / multiplier;
         eventPublisher.publishTransaction(user, amount); // publish event
-            betRepository.save(bet);
+//        betRepository.save(bet);
+    }
+    public void saveBets(List<Bet> bets){
+        betRepository.saveAll(bets);
     }
 
     public Bet getByBetId(Long betId) {
