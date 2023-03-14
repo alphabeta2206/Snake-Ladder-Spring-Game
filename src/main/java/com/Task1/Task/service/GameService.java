@@ -19,6 +19,7 @@ public class GameService {
 
     public Game getById(Long id) {
         return gameRepository.getReferenceById(id);
+        //return gameRepository.findById( id ) ;
     }
 
     public List<Game> gameList() {

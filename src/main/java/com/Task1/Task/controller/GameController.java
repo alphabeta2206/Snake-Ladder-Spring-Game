@@ -197,4 +197,36 @@ public class GameController {
 
         return "Success";
     }
+
+
+    @GetMapping("/leavegame/{id}")
+    @ResponseBody
+    public String leaveGame(@PathVariable String  id , Principal principal ){
+
+        Game game = gameService.getById( Long.parseLong(id) ) ;
+        User player = userService.getByUsername( principal.getName() ) ;
+        if( game == null )return "No such game exist" ;
+        if( game.getGameStatus() == GameStatus.NEW ) {
+            Set<User> players = game.getPlayers() ;
+            if( players.contains( player) ){
+                players.remove( player ) ;
+                player.setPlayingGame( false );
+
+                if( players.size() == 0 )game.setGameStatus( GameStatus.CANCELLED );
+
+                gameService.saveGame( game ) ;
+                userService.saveUser( player );
+
+                return "Successfully left the game" ;
+            }else return "You have not joined this game" ;
+
+        }
+
+
+        return "Game already started" ;
+
+
+    }
+
+
 }
