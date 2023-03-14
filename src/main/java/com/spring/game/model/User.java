@@ -32,6 +32,7 @@ public class User {
     )
     private Collection<Role> roles;
     private String currencyCode;
+    private boolean active;
 
     public long getId() {
         return id;

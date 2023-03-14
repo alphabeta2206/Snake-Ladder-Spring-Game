@@ -12,7 +12,7 @@ public class GamePlayer {
     //    private Ludo ludoGame;
     public GamePlayer(Game game){
         this.round = 0;
-        if ( "SNL".equals("SNL") ) {
+        if (game.getGameType().getGameName().equals("SNL") ) {
             Set<User> playerList = game.getPlayers();
             ArrayList<PlayerDTO> snlPlayers = new ArrayList<>();
             for(User player: playerList){

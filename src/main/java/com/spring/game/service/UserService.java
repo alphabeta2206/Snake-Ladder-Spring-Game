@@ -35,6 +35,7 @@ public class UserService implements UserDetailsService{
             user.setWallet_amt(userRegistrationDetails.getWallet_amt());
             user.setRoles(List.of(new Role(userRegistrationDetails.getRole())));
             user.setCurrencyCode(userRegistrationDetails.getCurrency());
+            user.setActive(false);
             System.out.println(user);
             return userRepo.save(user);
         }

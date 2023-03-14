@@ -4,7 +4,9 @@ import com.spring.game.dto.GameDTO;
 import com.spring.game.enums.BetStatus;
 import com.spring.game.enums.CancelReason;
 import com.spring.game.enums.GameStatus;
+import com.spring.game.events.publishers.EventPublisher;
 import com.spring.game.exceptions.GameException;
+import com.spring.game.gamelogic.SNLGame;
 import com.spring.game.model.Bet;
 import com.spring.game.model.Game;
 import com.spring.game.model.GameType;
@@ -34,6 +36,8 @@ public class GameController {
     private UserService userService;
     @Autowired
     private BetService betService;
+    @Autowired
+    private EventPublisher eventPublisher;
 
     @Autowired
     private CurrencyService currencyService;
@@ -57,6 +61,8 @@ public class GameController {
         // Checking if user can create game with given bet amount
         if(userBalance > gameDTO.getBetAmount()) {
             // Creating a new game
+            creator.setActive(true);
+            userService.updateUser(creator);
             game.setAssignGameName(gameDTO.getAssignGameName());
             game.setBetAmount(gameDTO.getBetAmount());
             game.setGameType(gameService.getGameType(gameDTO.getGameTypeId()));
@@ -74,17 +80,19 @@ public class GameController {
     public Game joinGame(@PathVariable Long id, Principal principal) {
         User user = userService.findByUsername(principal.getName());
         Game game = gameService.findById(id);
-        if(game.getGameStatus().equals(GameStatus.NEW)){
+        if(game.getGameStatus().equals(GameStatus.NEW) && !user.isActive()){
             //Checking if user can join game with given betAmount
             double betAmount = currencyService.convertToEuro(game.getBetAmount(), game.getCreator().getCurrencyCode());
             double userBalance = currencyService.convertToEuro(user.getWallet_amt(), user.getCurrencyCode());
             if(betAmount < userBalance) {
                 // Adding User to game
+                user.setActive(true);
                 game.getPlayers().add(userService.findByUsername(principal.getName()));
                 gameService.updateGame(game);
+                userService.updateUser(user);
                 return game;
             }else throw new GameException("Cannot join this game! Insufficient balance");
-        }else throw new GameException("Cannot join this game! Game already started!");
+        }else throw new GameException("Cannot join this game! Game already started or User already playing a game!");
     }
 
     @RequestMapping("/{id}/start")
@@ -109,11 +117,13 @@ public class GameController {
                 userService.updateUser(user);
             });
             gameService.updateGame(game);
+            eventPublisher.publishStartGame(game);
+            LOGGER.info("GAME DETAILS PUSLISHED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             return game;
         }
         else throw new GameException("Only Creator can start the game");
-
     }
+
 
     @RequestMapping("/{id}/cancelGame")
     @ResponseBody
@@ -139,6 +149,7 @@ public class GameController {
                     bet.setPayoff(0);
                     bet.setSettleTime(Timestamp.from(Instant.now()));
                     betService.saveBet(bet);
+                    user.setActive(false);
                     //Updating user wallet
                     user.setWallet_amt(user.getWallet_amt() + currencyService.convertFromEuro(bet.getAmount(), user.getCurrencyCode()));
                     userService.updateUser(user);
@@ -149,5 +160,12 @@ public class GameController {
             else throw new GameException("Game Already Ended!");
         }
         else throw new GameException("Only creator can end!");
+    }
+
+    @RequestMapping("/{id}/roll-die")
+    @ResponseBody
+    public void rollDie(@PathVariable long id, Principal principal){
+        long userId = userService.findByUsername(principal.getName()).getId();
+        eventPublisher.publishRollDie(userId);
     }
 }

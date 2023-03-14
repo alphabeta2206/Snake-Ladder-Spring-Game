@@ -8,6 +8,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -41,8 +42,9 @@ public class SecurityConfiguration{
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .sessionManagement()
-                .maximumSessions(10)
-                .maxSessionsPreventsLogin(true)
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                .maximumSessions(1)
+                .expiredUrl("/login?expired")
                 .sessionRegistry(sessionRegistry());
         http
                 .authenticationProvider(authenticationProvider())

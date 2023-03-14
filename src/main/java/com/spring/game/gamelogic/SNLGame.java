@@ -1,6 +1,7 @@
 package com.spring.game.gamelogic;
 
 import com.spring.game.dto.BonusLadderDTO;
+import com.spring.game.dto.BonusSnakeDTO;
 import com.spring.game.dto.PlayerDTO;
 
 import java.util.*;
@@ -11,10 +12,12 @@ public class SNLGame extends GameLogic {
     private HashMap<Integer, Integer> ladders; // Key = bottom, value = top
 
     private List<BonusLadderDTO> bonusLadders;
+    private List<BonusSnakeDTO> bonusSnakes;
 
     public SNLGame(List<PlayerDTO> players, double pricePool) {
         super(players, pricePool);
         bonusLadders = new ArrayList<BonusLadderDTO>();
+        bonusSnakes = new ArrayList<BonusSnakeDTO>();
 
         Random random = new Random();
         snakes = new HashMap<>();
@@ -64,6 +67,14 @@ public class SNLGame extends GameLogic {
         int ladderStart = 0;
         while(flag) {
             ladderStart = rand.nextInt(currentPlayerPosition, currentPlayerPosition + 6);
+            boolean new_Flag = false;
+            for (BonusSnakeDTO snake : bonusSnakes){
+                if (snake.getSnakeHead() == ladderStart) {
+                    new_Flag = true;
+                    break;
+                }
+            }
+            if(new_Flag)continue;
             if(ladders.containsKey(ladderStart) || snakes.containsKey(ladderStart))continue;
             flag = false;
         }
@@ -77,6 +88,39 @@ public class SNLGame extends GameLogic {
         this.bonusLadders.add(bonusLadder);
     }
 
+    public void generateBonusSnake(int currentPlayerPosition) {
+        Random rand = new Random();
+        BonusSnakeDTO bonusSnake = new BonusSnakeDTO();
+
+        for (BonusSnakeDTO snake : bonusSnakes) {
+            if (snake.getSnakeHead() > currentPlayerPosition && snake.getSnakeHead() < currentPlayerPosition + 6) {
+                snake.setLife(snake.getLife() + 1);
+                return;
+            }
+        }
+        boolean flag = true;
+        int snakeHead = 0;
+        while (flag) {
+            snakeHead = rand.nextInt(currentPlayerPosition, currentPlayerPosition + 6);
+            boolean new_Flag = false;
+            for (BonusLadderDTO ladder : bonusLadders){
+                if (ladder.getLadderStart() == snakeHead) {
+                    new_Flag = true;
+                    break;
+                }
+            }
+            if (new_Flag) continue;
+            if (ladders.containsKey(snakeHead) || snakes.containsKey(snakeHead)) continue;
+            flag = false;
+        }
+        int ladderEnd = 1;
+        if (snakeHead > 8) {
+            bonusSnake.setSnakeHead(snakeHead);
+            bonusSnake.setSnakeTail(ladderEnd);
+            bonusSnake.setLife(super.getPlayers().size());
+            this.bonusSnakes.add(bonusSnake);
+        }
+    }
     @Override
     public void rollDie() {
         super.setTotalMoves(super.getTotalMoves() + 1);
@@ -84,6 +128,10 @@ public class SNLGame extends GameLogic {
         int playerTurn = super.getPlayerTurn();
         PlayerDTO player = super.getPlayers().get(playerTurn);
         int nextPosition = player.getPosition() + dieValue;
+
+        bonusLadders.forEach(ladder -> ladder.setLife(ladder.getLife() - 1));
+        bonusSnakes.forEach(snake -> snake.setLife(snake.getLife() - 1));
+
 
         if (snakes.containsKey(nextPosition)) {
             nextPosition = snakes.get(nextPosition);
@@ -93,7 +141,21 @@ public class SNLGame extends GameLogic {
             for (BonusLadderDTO bonusLadder : bonusLadders) {
                 if (bonusLadder.getLadderStart() == nextPosition) nextPosition = bonusLadder.getLadderEnd();
             }
+            for (BonusSnakeDTO bonusSnake: bonusSnakes){
+                if (bonusSnake.getSnakeHead() == nextPosition) nextPosition = bonusSnake.getSnakeTail();
+            }
         }
+
+        if(player.getPrev_roll() == 6 && !player.isThree_sixes())  {
+            if(isPrime(dieValue + 6)) generateBonusLadder(nextPosition); // generate bonus ladder
+            if(player.isTwo_sixes() && dieValue == 6) {
+                generateBonusSnake(nextPosition);
+                player.setTwo_sixes(false);
+                player.setThree_sixes(true);
+            }
+            else if (!player.isTwo_sixes() && dieValue == 6) player.setTwo_sixes(true);
+        }
+        else player.setThree_sixes(false);
 
         if (nextPosition<64){ // still playing
             player.setPosition(nextPosition);
@@ -108,17 +170,21 @@ public class SNLGame extends GameLogic {
             super.getPlayers().set(playerTurn, player);
             this.updateWinnerList(player); // player won
             super.updateGameState(player);
-            playerTurn--;
+            if(playerTurn > 0) playerTurn--;
         }
-        bonusLadders.forEach(ladder -> ladder.setLife(ladder.getLife() - 1));
-        bonusLadders.removeIf(ladder -> ladder.getLife() == 0);
-        playerTurn++;  // Update player turn
+
+
+        if(dieValue!=6 && !player.isThree_sixes()) playerTurn++; // Update player turn
         if(playerTurn==super.getPlayers().size()) {
             playerTurn = 0;
-            super.setRound(super.getRound()+1);
+//            super.setRound(super.getRound()+1);
         }
         super.setPlayerTurn(playerTurn);
+        bonusLadders.removeIf(ladder -> ladder.getLife() == 0);
+        bonusSnakes.removeIf(snake -> snake.getLife() == 0);
     }
+
+
 
     @Override
     public void calculatePayout() {
