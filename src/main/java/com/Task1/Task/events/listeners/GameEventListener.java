@@ -4,7 +4,9 @@ import com.Task1.Task.dto.PlayerDTO;
 import com.Task1.Task.events.SimulateGameEvent;
 import com.Task1.Task.events.StartGameEvent;
 import com.Task1.Task.events.publishers.EventPublisher;
+import com.Task1.Task.gamelogic.GameLogic;
 import com.Task1.Task.gamelogic.GamePlayer;
+import com.Task1.Task.gamelogic.SNL;
 import com.Task1.Task.model.Bet;
 import com.Task1.Task.model.Game;
 import com.Task1.Task.model.User;
@@ -37,12 +39,16 @@ public class GameEventListener {
     @Transactional
     public void handleStartGame(StartGameEvent event) {
         this.gamePlayer = new GamePlayer(event.getGame());
-//        eventPublisher.publishTransaction(event.getGame().getPlayers(), event.getGame().getBetAmount());
-
-//        List<PlayerDTO> players = event.getGame().getPlayers().stream().map(this::convertUserToPlayer).collect(Collectors.toList());
-//        System.out.println(players);
-//        double prizePool = event.getGame().getBetAmount()*players.size();
-//        gameLogic = new SNL(players, prizePool);
+        List<PlayerDTO> players = event.getGame().getPlayers().stream().map(this::convertUserToPlayer).collect(Collectors.toList());
+        System.out.println(players);
+        double prizePool = event.getGame().getBetAmount()*players.size();
+        GameLogic gameLogic = new SNL(players, prizePool);
+        GamePlayer gamePlayer = new GamePlayer(event.getGame());
+        games.put(event.getGame().getId(), gameLogic);
+        gamePlayers.put(event.getGame().getId(), gamePlayer);
+        event.getGame().getPlayers().forEach(user -> {
+            user.setWallet_amt(user.getWallet_amt() - currencyService.convertFromEuro(event.getGame().getBetAmount(), user.getCurrencyCode()));
+        });
 
     }
 
