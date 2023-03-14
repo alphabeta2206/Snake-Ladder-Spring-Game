@@ -4,11 +4,14 @@ import com.Task1.Task.events.RollDieEvent;
 import com.Task1.Task.events.SimulateGameEvent;
 import com.Task1.Task.events.StartGameEvent;
 import com.Task1.Task.events.TransactionEvent;
+import com.Task1.Task.model.Bet;
 import com.Task1.Task.model.Game;
 import com.Task1.Task.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+
+import java.util.HashMap;
 
 @Component
 public class EventPublisher {
@@ -25,13 +28,12 @@ public class EventPublisher {
         applicationEventPublisher.publishEvent(event);
     }
 
-    public void publishRollDie(long userId) {
-        RollDieEvent event = new RollDieEvent(userId);
+    public void publishRollDie(long userId, long gameId) {
+        RollDieEvent event = new RollDieEvent(userId, gameId);
         applicationEventPublisher.publishEvent(event);
     }
-
-    public void publishSimulateGame(Game game){
-        SimulateGameEvent event = new SimulateGameEvent(game);
+    public void publishSimulateGame(Game game, HashMap<Long, Bet> bets) {
+        SimulateGameEvent event = new SimulateGameEvent(game, bets);
         applicationEventPublisher.publishEvent(event);
     }
 }

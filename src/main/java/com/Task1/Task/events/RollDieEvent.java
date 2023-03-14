@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RollDieEvent {
     private long userId;
+    private long gameId;
 }
