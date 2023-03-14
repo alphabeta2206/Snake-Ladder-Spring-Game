@@ -22,7 +22,6 @@ import java.util.Set;
 @Controller
 public class HomeController {
 
-    private Set<String> cached = new HashSet<String>();
 
     @Autowired
     UserService userService;
@@ -37,10 +36,10 @@ public class HomeController {
     }
 
     @GetMapping("/login")
-    public String showLoginForm(Model model , Principal principal ) {
+    public String showLoginForm( Principal principal ) {
 
 
-        if( principal == null ){ model.addAttribute("user", new User()); return "loginForm"; }
+        if( principal == null ){ return "loginForm"; }
         return "redirect:/lobby" ;
 
     }

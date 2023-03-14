@@ -18,6 +18,9 @@ public class User {
     private String userName;
     private String password;
     private double walletAmt;
+
+    private boolean playingGame ;
+
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(
             name = "user_roles",

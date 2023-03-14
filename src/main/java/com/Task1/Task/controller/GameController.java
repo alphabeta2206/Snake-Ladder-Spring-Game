@@ -52,9 +52,11 @@ public class GameController {
     @ResponseBody
     public String createGame(@PathVariable String gametype, @PathVariable String gamename, @PathVariable String betamount , Principal principal) {
         User user = userService.getByUsername(principal.getName());
+        if( user.isPlayingGame() )return "You are already playing the game . Wait for previous game to finish" ;
         Role role = new Role("ROLE_ADMIN");
         user.getRoles().add(role);
         user.setRoles(user.getRoles());
+        user.setPlayingGame( true );
         Game game = new Game();
         game.setGametype(new GameType(gametype));
         game.setGameStartTime(new Timestamp(System.currentTimeMillis()));
@@ -64,6 +66,7 @@ public class GameController {
         game.getPlayers().add(user);
         game.setBetAmount( Double.parseDouble( betamount ) );
         gameService.saveGame(game);
+        userService.saveUser( user );
         return "Game Created";
     }
 
@@ -122,6 +125,7 @@ public class GameController {
 
     @PreAuthorize("ROLE_ADMIN")
     @RequestMapping("/cancelgame/{gid}")
+    @Transactional
     public ResponseEntity<String > deleteGame(@PathVariable long gid , Principal principal ) {
         Game game = gameService.getById(gid);
         Set<User> playerList = game.getPlayers();
@@ -136,6 +140,8 @@ public class GameController {
                     bet.setStatus('C');
                     betService.saveBet(bet);
                 }
+                user.setPlayingGame( false );
+                userService.saveUser( user );
             });
         }else throw new GameException("Game Already Cancelled");
         game.setGameStatus(GameStatus.COMPLETED);
@@ -150,10 +156,14 @@ public class GameController {
         Game game = gameService.getById(gid);
         if (game.getGameStatus() == GameStatus.NEW) {
             User user = userService.getByUsername(principal.getName());
+            if( user.isPlayingGame())return "You are already playing the game . Wait for previous game to finish" ;
+            user.setPlayingGame( true );
+            userService.saveUser( user );
             game.getPlayers().add(user);
         }else if (game.getGameStatus() == GameStatus.IN_PROGRESS) throw new GameException("Game Already In Progress");
         else throw new GameException("Game Already Cancelled");
         gameService.saveGame(game);
+
         return "Joined Game";
     }
 
@@ -172,9 +182,11 @@ public class GameController {
                 double multiplier = currencyService.getMultiplier(user.getCurrencyCode());
                 bet.setPayOff(payout);
                 user.setWalletAmt(user.getWalletAmt() - (Double)( session.getAttribute("betAmount") ) / multiplier + payout / multiplier );
+                user.setPlayingGame( false );
                 //user.setWalletAmt(user.getWalletAmt() + payout / multiplier);
                 bet.setSettleTime(Timestamp.from(Instant.now()));
                 bet.setStatus('S');
+
                 betService.saveBet(bet);
                 userService.saveUser( user );
             });

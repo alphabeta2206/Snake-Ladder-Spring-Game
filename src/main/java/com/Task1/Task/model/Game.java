@@ -15,7 +15,7 @@ import java.util.Set;
 @Data
 public class Game {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY )
     private Long id;
     @ManyToOne(
             cascade = CascadeType.ALL
@@ -33,8 +33,8 @@ public class Game {
     )
     private User creator;
 
-    @OneToMany(
-            cascade = CascadeType.PERSIST
+    @ManyToMany(
+            cascade = CascadeType.ALL
     )
     private Set<User> players = new HashSet<>();
 }

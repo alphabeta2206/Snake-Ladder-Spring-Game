@@ -16,12 +16,14 @@ public class Main {
         Game game = new Game();
         game.setGametype(new GameType("SNL"));
         game.setBetAmount(100);
-        User player1 = new User(12L, "A", "B", "C", 12, List.of(new Role("USER")), "USD");
+        /*User player1 = new User(12L, "A", "B", "C", 12, List.of(new Role("USER")), "USD");
         User player2 = new User(13L, "A", "B", "C", 12, List.of(new Role("USER")), "USD");
         User player3 = new User(14L, "A", "B", "C", 12, List.of(new Role("USER")), "USD");
         User player4 = new User(15L, "A", "B", "C", 12, List.of(new Role("USER")), "USD");
-        Set<User> players = Set.of(player1, player2, player3, player4);
-        game.setPlayers(players);
+
+         */
+        //Set<User> players = Set.of(player1, player2, player3, player4);
+        //game.setPlayers(players);
 
         GamePlayer player = new GamePlayer(game);
         while(true) {
