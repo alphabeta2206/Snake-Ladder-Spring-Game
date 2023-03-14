@@ -172,7 +172,6 @@ public class GameController {
     @RequestMapping("/simulategame/{gid}")
     public void simulateGame(@PathVariable long gid){
         Game game = gameService.getById(gid);
-
-
+        eventPublisher.publishSimulateGame(game);
     }
 }

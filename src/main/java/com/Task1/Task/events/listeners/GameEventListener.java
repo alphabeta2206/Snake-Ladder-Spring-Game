@@ -3,6 +3,7 @@ package com.Task1.Task.events.listeners;
 import com.Task1.Task.dto.PlayerDTO;
 import com.Task1.Task.events.SimulateGameEvent;
 import com.Task1.Task.events.StartGameEvent;
+import com.Task1.Task.events.publishers.EventPublisher;
 import com.Task1.Task.gamelogic.GamePlayer;
 import com.Task1.Task.model.Bet;
 import com.Task1.Task.model.Game;
@@ -12,6 +13,7 @@ import com.Task1.Task.service.CurrencyService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 
 import java.sql.Timestamp;
@@ -20,6 +22,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class GameEventListener {
+    GamePlayer gamePlayer;
 
     @Autowired
     CurrencyService currencyService;
@@ -27,16 +30,20 @@ public class GameEventListener {
     @Autowired
     BetService betService;
 
-    GamePlayer gamePlayer;
+    @Autowired
+    EventPublisher eventPublisher;
 
     @EventListener(StartGameEvent.class)
     @Transactional
     public void handleStartGame(StartGameEvent event) {
         this.gamePlayer = new GamePlayer(event.getGame());
+//        eventPublisher.publishTransaction(event.getGame().getPlayers(), event.getGame().getBetAmount());
+
 //        List<PlayerDTO> players = event.getGame().getPlayers().stream().map(this::convertUserToPlayer).collect(Collectors.toList());
 //        System.out.println(players);
 //        double prizePool = event.getGame().getBetAmount()*players.size();
 //        gameLogic = new SNL(players, prizePool);
+
     }
 
 //    @EventListener(RollDieEvent.class)

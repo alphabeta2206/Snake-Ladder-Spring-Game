@@ -1,6 +1,7 @@
 package com.Task1.Task.events.publishers;
 
 import com.Task1.Task.events.RollDieEvent;
+import com.Task1.Task.events.SimulateGameEvent;
 import com.Task1.Task.events.StartGameEvent;
 import com.Task1.Task.events.TransactionEvent;
 import com.Task1.Task.model.Game;
@@ -26,6 +27,11 @@ public class EventPublisher {
 
     public void publishRollDie(long userId) {
         RollDieEvent event = new RollDieEvent(userId);
+        applicationEventPublisher.publishEvent(event);
+    }
+
+    public void publishSimulateGame(Game game){
+        SimulateGameEvent event = new SimulateGameEvent(game);
         applicationEventPublisher.publishEvent(event);
     }
 }
