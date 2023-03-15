@@ -154,33 +154,34 @@ public class GameController {
             game.setGameStatus(GameStatus.COMPLETED);
             game.setPlayers(new HashSet<>());
             gameService.saveGame(game);
+            return "Game Has Ended";
         }
-        else throw new GameException("Game Already Ended");
-        return "Success";
+        else return "Game Already Ended";
     }
 
     @RequestMapping("/rolldie/{id}")
     @ResponseBody
-    public void rollDie(@PathVariable long id, Principal principal){
+    public String rollDie(@PathVariable long id, Principal principal){
         Game game = gameService.getById(id);
         if (game.getGameStatus() == GameStatus.IN_PROGRESS){
             long userId = userService.getByUsername(principal.getName()).getId();
             eventPublisher.publishRollDie(userId, id);
+            return "Request for Die Roll Placed";
         }
-        else throw new GameException("Die Cannot Be Rolled");
-
+        else return "Die Roll Only Allowed For Ongoing Games";
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @RequestMapping("/simulategame/{gid}")
     @ResponseBody
-    public void simulateGame(@PathVariable long gid, HttpSession session){
+    public String simulateGame(@PathVariable long gid, HttpSession session){
         Game game = gameService.getById(gid);
         if (game.getGameStatus() == GameStatus.IN_PROGRESS) {
             eventPublisher.publishSimulateGame(game, (HashMap<Long, Bet>) session.getAttribute("playerBets"));
             game.setGameStatus(GameStatus.COMPLETED);
             gameService.saveGame(game);
+            return "Request For Simulation Placed";
         }
-        else throw new GameException("Game State Does not Allow Simulation");
+        else return "Game State Does not Allow Simulation";
     }
 }
