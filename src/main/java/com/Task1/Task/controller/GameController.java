@@ -75,6 +75,7 @@ public class GameController {
     public String startGame(@PathVariable Long gid, HttpSession session) {
         Game game = gameService.getById(gid);
         if( game.getGameStatus() == GameStatus.IN_PROGRESS ) return "Game already started" ;
+        else if ( game.getGameStatus() == GameStatus.COMPLETED ) return "Game Already Completed";
         Set<User> playerList = game.getPlayers();
         HashMap<Long, Bet> bets = new HashMap<>();
         if (playerList.size() > 1) {
@@ -88,27 +89,30 @@ public class GameController {
             });
             session.setAttribute("playerBets", bets);
             eventPublisher.publishStartGame(game); // publish game start
-        }else throw new GameException("Minimum of Two Players required to start game");
+        }else return "Not Enough Players to Start Game";
         return "Game Started";
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @RequestMapping("/cancelgame/{gid}")
     @ResponseBody
-    public String deleteGame(@PathVariable long gid ) {
+    public String deleteGame(@PathVariable long gid, HttpSession session ) {
         Game game = gameService.getById(gid);
         Set<User> playerList = game.getPlayers();
         List<Bet> betList = new ArrayList<>();
-        if (game.getGameStatus() == GameStatus.IN_PROGRESS || game.getGameStatus() == GameStatus.NEW) {
-            playerList.forEach(user -> {
-                Bet bet = betService.getByUserId(user.getId());
-                bet.setPayOff(game.getBetAmount());
-                bet.setStatus('C');
-                bet.setSettleTime(Timestamp.from(Instant.now()));
-                betList.add(bet);
-            });
-            betService.saveBets(betList);
-        }else throw new GameException("Game Already Cancelled");
+        HashMap<Long, Bet> bets = (HashMap<Long, Bet>) session.getAttribute("playerBets");
+        if (bets != null) {
+            if (game.getGameStatus() == GameStatus.IN_PROGRESS) {
+                playerList.forEach(user -> {
+                    Bet bet = bets.get(user.getId());
+                    bet.setPayOff(game.getBetAmount());
+                    bet.setStatus('C');
+                    bet.setSettleTime(Timestamp.from(Instant.now()));
+                    betList.add(bet);
+                });
+                betService.saveBets(betList);
+            }else return "Game Already Cancelled";
+        } else return "No Bets Found in Session!!!";
         game.setGameStatus(GameStatus.COMPLETED);
         game.setCancelReason(CancelReason.USER_CANCELLED);
         game.setPlayers( new HashSet<>());
