@@ -1,20 +1,14 @@
 package com.Task1.Task.events;
 
 import com.Task1.Task.model.Game;
+import lombok.Data;
 import org.springframework.context.ApplicationEvent;
-public class StartGameEvent extends ApplicationEvent {
+
+@Data
+public class StartGameEvent{
     private Game game;
 
-    public StartGameEvent(Object source, Game game) {
-        super(source);
-        this.game = game;
-    }
-
-    public Game getGame() {
-        return game;
-    }
-
-    public void setGame(Game game) {
+    public StartGameEvent(Game game) {
         this.game = game;
     }
 }

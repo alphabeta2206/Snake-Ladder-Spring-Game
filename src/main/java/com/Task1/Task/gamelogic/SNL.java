@@ -106,7 +106,7 @@ public class SNL extends GameLogic {
 
     @Override
     public void rollDie() {
-        super.setTotalMoves(super.getTotalMoves() + 1);
+        super.setTotalMoves(super.getTotalMoves());
         int dieValue = super.getDice().getValue();
         int playerTurn = super.getPlayerTurn();
         PlayerDTO player = super.getPlayers().get(playerTurn);

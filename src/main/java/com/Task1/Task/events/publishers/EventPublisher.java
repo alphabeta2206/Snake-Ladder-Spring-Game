@@ -24,7 +24,7 @@ public class EventPublisher {
     }
 
     public void publishStartGame(Game game) {
-        StartGameEvent event = new StartGameEvent(this, game);
+        StartGameEvent event = new StartGameEvent(game);
         applicationEventPublisher.publishEvent(event);
     }
 
