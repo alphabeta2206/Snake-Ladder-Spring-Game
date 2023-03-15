@@ -29,6 +29,7 @@ public class CurrencyController {
     @ResponseBody
     public List<CurrencyExchangeRate> findAll(){
         return currencyService.getCurrencyExchanges();
+        //ads
     }
 }
 //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
