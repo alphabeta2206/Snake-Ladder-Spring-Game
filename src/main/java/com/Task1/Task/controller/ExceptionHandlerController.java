@@ -16,7 +16,7 @@ import java.sql.SQLException;
 public class ExceptionHandlerController {
 
     @ExceptionHandler(NoHandlerFoundException.class)
-    @ResponseStatus(value= HttpStatus.NOT_FOUND)
+    @ResponseStatus(value = HttpStatus.NOT_FOUND)
     @ResponseBody
     public String requestHandlingNoHandlerFound() {
         return "No Such URL Exists";
@@ -39,10 +39,14 @@ public class ExceptionHandlerController {
     @ExceptionHandler(SQLException.class)
     @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
     @ResponseBody
-    public String sqlError(){ return "Database Errror!!!"; }
+    public String sqlError() {
+        return "Database Errror!!!";
+    }
 
     @ExceptionHandler(EntityNotFoundException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
-    public String unknownEntity(){ return "Entity Not Found!!"; }
+    public String unknownEntity() {
+        return "Entity Not Found!!";
+    }
 }
