@@ -28,7 +28,7 @@ public class GamePlayer {
 
     public LinkedHashMap<PlayerDTO, Integer> startSNL(){
         int playerCount = this.snlGame.getPlayers().size();
-        while( this.snlGame.getPlayersWon() < playerCount - 1){
+        while( this.snlGame.getPlayers().size() > 0 ){
             this.snlGame.rollDie();
         }
         this.snlGame.calculatePayout();
