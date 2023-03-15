@@ -2,6 +2,7 @@ package com.spring.game.gamelogic;
 
 import com.spring.game.dto.BonusLadderDTO;
 import com.spring.game.dto.BonusSnakeDTO;
+import com.spring.game.dto.MoveDTO;
 import com.spring.game.dto.PlayerDTO;
 
 import java.util.*;
@@ -53,6 +54,7 @@ public class SNLGame extends GameLogic {
     }
 
     public void generateBonusLadder(int currentPlayerPosition) {
+        System.out.println("Bonus Ladder generated! Within six position from - " + currentPlayerPosition);
         // Generating to two levels above
         Random rand = new Random();
         BonusLadderDTO bonusLadder = new BonusLadderDTO();
@@ -89,6 +91,7 @@ public class SNLGame extends GameLogic {
     }
 
     public void generateBonusSnake(int currentPlayerPosition) {
+        System.out.println("Bonus Snake generated! Within six position from - " + currentPlayerPosition);
         Random rand = new Random();
         BonusSnakeDTO bonusSnake = new BonusSnakeDTO();
 
@@ -122,27 +125,42 @@ public class SNLGame extends GameLogic {
         }
     }
     @Override
-    public void rollDie() {
+    public MoveDTO rollDie() {
+        MoveDTO move = new MoveDTO();
         super.setTotalMoves(super.getTotalMoves() + 1);
         int dieValue = super.getDice().getValue();
         int playerTurn = super.getPlayerTurn();
         PlayerDTO player = super.getPlayers().get(playerTurn);
         int nextPosition = player.getPosition() + dieValue;
 
+        move.setPrevPos(player.getPosition());
+        move.setDieRoll(dieValue);
         bonusLadders.forEach(ladder -> ladder.setLife(ladder.getLife() - 1));
         bonusSnakes.forEach(snake -> snake.setLife(snake.getLife() - 1));
 
 
         if (snakes.containsKey(nextPosition)) {
+            System.out.println("Bitten by snake went from " + nextPosition + "-" + snakes.get(nextPosition));
+            move.getSnakePos().put(nextPosition, snakes.get(nextPosition));
             nextPosition = snakes.get(nextPosition);
         } else if (ladders.containsKey(nextPosition)) {
+            System.out.println("Climbed ladder " + nextPosition + "-" + ladders.get(nextPosition));
+            move.getLadderPos().put(nextPosition, ladders.get(nextPosition));
             nextPosition = ladders.get(nextPosition);
         } else {
             for (BonusLadderDTO bonusLadder : bonusLadders) {
-                if (bonusLadder.getLadderStart() == nextPosition) nextPosition = bonusLadder.getLadderEnd();
+                if (bonusLadder.getLadderStart() == nextPosition){
+                    System.out.println("Got on a bonus Ladder at - " + nextPosition);
+                    move.getLadderPos().put(nextPosition, bonusLadder.getLadderEnd());
+                    nextPosition = bonusLadder.getLadderEnd();
+                }
             }
             for (BonusSnakeDTO bonusSnake: bonusSnakes){
-                if (bonusSnake.getSnakeHead() == nextPosition) nextPosition = bonusSnake.getSnakeTail();
+                if (bonusSnake.getSnakeHead() == nextPosition) {
+                    System.out.println("Got on a bonus snake at - " + nextPosition);
+                    move.getSnakePos().put(nextPosition, snakes.get(nextPosition));
+                    nextPosition = bonusSnake.getSnakeTail();
+                }
             }
         }
 
@@ -177,11 +195,13 @@ public class SNLGame extends GameLogic {
         if(dieValue!=6 && !player.isThree_sixes()) playerTurn++; // Update player turn
         if(playerTurn==super.getPlayers().size()) {
             playerTurn = 0;
-//            super.setRound(super.getRound()+1);
         }
         super.setPlayerTurn(playerTurn);
+        move.setPlayer(player);
+        move.setCurrentPos(nextPosition);
         bonusLadders.removeIf(ladder -> ladder.getLife() == 0);
         bonusSnakes.removeIf(snake -> snake.getLife() == 0);
+        return move;
     }
 
 

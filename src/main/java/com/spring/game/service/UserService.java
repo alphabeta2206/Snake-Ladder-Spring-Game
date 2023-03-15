@@ -75,4 +75,8 @@ public class UserService implements UserDetailsService{
     private Collection<? extends GrantedAuthority> mapRolesToAuthorities(Collection<Role> roles) {
         return roles.stream().map(role -> new SimpleGrantedAuthority(role.getName())).collect(Collectors.toList());
     }
+
+    public void updateAll(List<User> users) {
+        userRepo.saveAll(users);
+    }
 }

@@ -1,5 +1,6 @@
 package com.spring.game.gamelogic;
 
+import com.spring.game.dto.MoveDTO;
 import com.spring.game.dto.PlayerDTO;
 import lombok.Data;
 
@@ -26,7 +27,7 @@ public abstract class GameLogic {
         this.round = 1;
     }
 
-    public abstract void rollDie();
+    public abstract MoveDTO rollDie();
     public abstract void calculatePayout();
     public abstract double getPayoutMultiplier(int winNum);
     public abstract void updateWinnerList(PlayerDTO player);
