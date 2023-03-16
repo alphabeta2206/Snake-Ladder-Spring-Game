@@ -3,6 +3,7 @@ package com.Task1.Task.service;
 import com.Task1.Task.model.Game;
 import com.Task1.Task.model.User;
 import com.Task1.Task.repository.GameRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +19,8 @@ public class GameService {
     }
 
     public Game getById(Long id) {
-        return gameRepository.getReferenceById(id);
+        try { return gameRepository.getReferenceById(id); }
+        catch (EntityNotFoundException e) { return null; }
     }
 
     public List<Game> gameList() {
