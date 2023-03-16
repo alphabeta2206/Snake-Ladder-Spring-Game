@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+
+</head>
+<body>
+<div class = "container">
+  <div class = "row">
+      <h1 th:text="'Hello, ' + ${user_details.id} + '!'"></h1>
+      <h3>Available games:</h3>
+      <table class = "table table-striped table bordered">
+          <thead class = "table dark">
+          <tr>
+              <th> Game id</th>
+              <th> Game creator name</th>
+              <th> Bet Amount</th>
+              <th> Actions</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each = "games : ${games}">
+              <td th:text="${games.id}"></td>
+              <td th:text="${games.gamecreatorid}"></td>
+              <td th:text="${games.bet_amount}"></td>
+              <td>
+                  <a th:href = "@{/cancelgame/{id}/{uid} (uid=${user_details.id}, id=${games.id})}" class = "btn btn-primary" >Cancel Game</a>
+                  <a th:href = "@{/joingame/{id}/{uid} (uid=${user_details.id}, id=${games.id})}" class = "btn btn-primary" >Join Game</a>
+
+
+              </td>
+
+
+          </tr>
+          </tbody>
+      </table>
+      <form class = "form" action="/createGame">
+          <button type = "submit" class = "btn btn-primary">Create Game</button>
+      </form>
+
+  </div>
+</div>
+
+</body>
+</html>

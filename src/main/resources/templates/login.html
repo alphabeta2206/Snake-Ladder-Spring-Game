@@ -1,0 +1,112 @@
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Login Page</title>
+    <style>
+        body {
+
+
+
+  justify-content: center;
+  align-items: center;
+  background-color: #f2f2f2;
+  font-family: Arial, sans-serif;
+}
+
+.container {
+position: absolute;
+top: 50%;
+left : 50%;
+  transform: translate(-50%, -50%);
+
+  background-color: #ffffff;
+  max-width: 400px;
+  min-width: 300px;
+  max-height: 400px;
+  min-height: 300px;
+  margin: 0 auto;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+h1 {
+  text-align: center;
+  color: #333333;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  margin-bottom: 5px;
+  color: #666666;
+}
+.alert-success{
+    margin: auto;
+    background-color: #4CAF50;
+  border-radius: 10px;
+  padding: 10px;
+  color: #ffffff;
+
+}
+
+.alert-error{
+  margin: auto;
+   background-color: #FF6347;
+  border-radius: 10px;
+  padding: 10px;
+  color: #ffffff;
+
+}
+
+input[type="text"],
+input[type="password"] {
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  border: solid 1px black;
+}
+
+input[type="submit"] {
+  background-color: #4CAF50;
+  color: #ffffff;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+input[type="submit"]:hover {
+  background-color: #3e8e41;
+}
+
+
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Login</h1>
+    <form name="f" th:action="@{/processLogin}" method="post">
+        <div th:if="${param.error}" class="alert-error">
+            Invalid Username or Password!!!!
+        </div>
+        <div th:if="${param.logout}" class="alert-success">
+            You have been logged out sucessfully!!
+        </div>
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username">
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password">
+
+        <input type="submit" value="Login">
+    </form>
+</div>
+</body>
+</html>
+
+

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <title>create game</title>
+</head>
+<body>
+  <div class="container">
+    <form class="form-horizontal" role="form" method="POST" action="/processCreateGame" autocomplete="off">
+      <input type="radio" id="option1" name="game_typeid" value="1">
+      <label for="option1">snake and ladders</label>
+
+      <input type="radio" id="option2" name="game_typeid" value="2">
+      <label for="option2">ludo</label>
+      <br>
+      <input type="number" name="bet_amount" placeholder="Enter the bet amount...">
+      <br>
+      <input type="text" name="game_name" placeholder="Game Name...">
+<br>
+      <button type="submit" class="btn btn-success">Submit</button>
+    </form>
+  </div>
+</body>
+</html>

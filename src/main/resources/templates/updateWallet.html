@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Wallet UPDATE</title>
+</head>
+<body>
+
+<div>
+  <form th:action="@{/processUpdateWallet/{id} (id=${user_details.id})}" method="post">
+    <input type="number" name="wallet_amt" id="wallet_amt">
+    <button type="submit" class=" " >Submit</button>
+  </form>
+</div>
+
+</body>
+</html>
