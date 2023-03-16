@@ -35,7 +35,6 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Controller
 public class GameController {
-
     @Autowired
     UserService userService;
 
@@ -46,36 +45,37 @@ public class GameController {
     BetService betService;
 
     @Autowired
-    CurrencyService currencyService;
-
-    @Autowired
     EventPublisher eventPublisher;
 
-    @RequestMapping("/lobby")
-    @ResponseBody
-    public List<Game> lobby(HttpServletResponse response, Principal principal) {
+    @Operation(summary = "List of Active Games")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Fetched Active Game List", content = {@Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = List.class))}),
+            @ApiResponse(responseCode = "404", description = "Error", content = @Content)})
+    @GetMapping("/lobby")
+    public ResponseEntity<List<Game>> lobby(HttpServletResponse response, Principal principal) {
         Cookie cookie = new Cookie("username", principal.getName());
         response.addCookie(cookie);
-        return gameService.gameList();
+        return ResponseEntity.status(HttpStatus.OK).body(gameService.gameList());
     }
 
+    @Operation(summary = "Creates a New Game")
+    @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "Game Created", content = {@Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = Game.class))}),
+            @ApiResponse(responseCode = "404", description = "Error", content = @Content)})
     @PostMapping("/create")
-    @ResponseBody
-    public String createGame(@RequestBody GameDTO gameDTO, Principal principal){
+    public ResponseEntity<Game> createGame(@RequestBody GameDTO gameDTO, Principal principal){
         User user = userService.getByUsername(principal.getName());
         Role role = new Role("ROLE_ADMIN");
         user.getRoles().add(role);
         user.setRoles(user.getRoles());
         Game game = new Game();
         game.setGametype(new GameType(gameDTO.getGameType()));
-        game.setGameStartTime(new Timestamp(System.currentTimeMillis()));
+        game.setGameStartTime(new Timestamp(System.currentTimeMillis())); // move these to service layer.....
         game.setCreator(user);
         game.setAssignGameName(gameDTO.getGameName());
         game.setGameStatus(GameStatus.NEW);
         game.getPlayers().add(user);
         game.setBetAmount(gameDTO.getBetAmount());
         gameService.saveGame(game);
-        return "Game Created";
+        return ResponseEntity.status(HttpStatus.OK).body(game);
     }
 
     @PreAuthorize("ROLE_ADMIN")
@@ -107,11 +107,11 @@ public class GameController {
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @Operation(summary = "Cancel New or In-Status Game")
+    @Operation(summary = "Cancel New or In-Progress Game")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Game Cancelled", content = {@Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = Game.class))}),
             @ApiResponse(responseCode = "404", description = "Error", content = @Content)})
     @GetMapping("/{gid}/cancel")
-    public ResponseEntity<?> deleteGame(@PathVariable long gid, HttpSession session ) {
+    public ResponseEntity<?> cancelGame(@PathVariable long gid, HttpSession session ) {
         Game game = gameService.getById(gid);
         if(game!=null){
             Set<User> playerList = game.getPlayers();
@@ -137,68 +137,48 @@ public class GameController {
         return ResponseEntity.status(HttpStatus.OK).body(game);
     }
 
-    @GetMapping("/joingame/{gid}")
-    @ResponseBody
-    public String joinGame(@PathVariable Long gid, Principal principal) {
+    @Operation(summary = "Join New Game")
+    @GetMapping("/{gid}/join")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Joined Game", content = {@Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = Game.class))}),
+            @ApiResponse(responseCode = "404", description = "Error", content = @Content)})
+    public ResponseEntity<?> joinGame(@PathVariable Long gid, Principal principal) {
         Game game = gameService.getById(gid);
         if (game.getGameStatus() == GameStatus.NEW) {
             User user = userService.getByUsername(principal.getName());
             game.getPlayers().add(user);
-        }else if (game.getGameStatus() == GameStatus.IN_PROGRESS) throw new GameException("Game Already In Progress");
-        else throw new GameException("Game Already Cancelled");
+        }else if (game.getGameStatus() == GameStatus.IN_PROGRESS) return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body("Game Already Started");
+        else return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body("Game Already Completed");
         gameService.saveGame(game);
-        return "Joined Game";
+        return ResponseEntity.status(HttpStatus.OK).body(game);
     }
 
-    @RequestMapping("/endgame/{gid}/{payout}")
-    @ResponseBody
-    @Deprecated
-    @Transactional
-    public String endGame(@PathVariable Long gid, @PathVariable double payout, HttpSession session) {
-        Game game = gameService.getById(gid);
-        Set<User> playerList = game.getPlayers();
-        if (game.getGameStatus() == GameStatus.IN_PROGRESS) {
-            gameService.saveGame(game);
-            HashMap<Long, Bet> bets = (HashMap<Long, Bet>) session.getAttribute("playerBets");
-            playerList.forEach(user -> {
-                Bet bet = bets.get(user.getId());
-                double multiplier = currencyService.getMultiplier(user.getCurrencyCode());
-                bet.setPayOff(payout);
-                bet.setSettleTime(Timestamp.from(Instant.now()));
-                bet.setStatus('S');
-                betService.saveBet(bet, user, multiplier);
-            });
-            game.setGameStatus(GameStatus.COMPLETED);
-            game.setPlayers(new HashSet<>());
-            gameService.saveGame(game);
-            return "Game Has Ended";
-        }
-        else return "Game Already Ended";
-    }
-
-    @RequestMapping("/rolldie/{id}")
-    @ResponseBody
-    public String rollDie(@PathVariable long id, Principal principal){
+    @Operation(summary = "Roll Die")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Die Rolled"),
+            @ApiResponse(responseCode = "404", description = "Error", content = @Content)})
+    @GetMapping("/{id}/roll")
+    public ResponseEntity<String> rollDie(@PathVariable long id, Principal principal){
         Game game = gameService.getById(id);
         if (game.getGameStatus() == GameStatus.IN_PROGRESS){
             long userId = userService.getByUsername(principal.getName()).getId();
             eventPublisher.publishRollDie(userId, id);
-            return "Request for Die Roll Placed";
         }
-        else return "Die Roll Only Allowed For Ongoing Games";
+        else return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body("Die Roll Only Allowed For Ongoing Games");
+        return ResponseEntity.status(HttpStatus.OK).body("Request For Die Roll Placed");
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @RequestMapping("/simulategame/{gid}")
-    @ResponseBody
-    public String simulateGame(@PathVariable long gid, HttpSession session){
+    @Operation(summary = "Simulate Game")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Die Rolled"),
+            @ApiResponse(responseCode = "404", description = "Error", content = @Content)})
+    @GetMapping("/{gid}/sim")
+    public ResponseEntity<String> simulateGame(@PathVariable long gid, HttpSession session){
         Game game = gameService.getById(gid);
         if (game.getGameStatus() == GameStatus.IN_PROGRESS) {
             eventPublisher.publishSimulateGame(game, (HashMap<Long, Bet>) session.getAttribute("playerBets"));
             game.setGameStatus(GameStatus.COMPLETED);
-            gameService.saveGame(game);
-            return "Request For Simulation Placed";
+            gameService.saveGame(game);;
         }
-        else return "Game State Does not Allow Simulation";
+        else return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body("Game State Does Not Allow Simulation");
+        return ResponseEntity.status(HttpStatus.OK).body("Game Simulation in Progress");
     }
 }
