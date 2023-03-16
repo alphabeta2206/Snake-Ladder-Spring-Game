@@ -20,7 +20,8 @@ public class GameService {
 
     public Game getById(Long id) {
         try { return gameRepository.getReferenceById(id); }
-        catch (EntityNotFoundException e) { return null; }
+        catch (EntityNotFoundException e) { return null;
+        }
     }
 
     public List<Game> gameList() {

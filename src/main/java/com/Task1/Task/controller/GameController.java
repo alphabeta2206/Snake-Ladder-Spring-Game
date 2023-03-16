@@ -60,7 +60,7 @@ public class GameController {
     @Operation(summary = "Creates a New Game")
     @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "Game Created", content = {@Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = Game.class))}),
             @ApiResponse(responseCode = "404", description = "Error", content = @Content)})
-    @PostMapping("/create")
+    @RequestMapping("/create")
     public ResponseEntity<Game> createGame(@RequestBody GameDTO gameDTO, Principal principal){
         User user = userService.getByUsername(principal.getName());
         Role role = new Role("ROLE_ADMIN");
@@ -68,7 +68,7 @@ public class GameController {
         user.setRoles(user.getRoles());
         Game game = new Game();
         game.setGametype(new GameType(gameDTO.getGameType()));
-        game.setGameStartTime(new Timestamp(System.currentTimeMillis())); // move these to service layer.....
+        game.setGameStartTime(new Timestamp(System.currentTimeMillis()));
         game.setCreator(user);
         game.setAssignGameName(gameDTO.getGameName());
         game.setGameStatus(GameStatus.NEW);
@@ -172,7 +172,7 @@ public class GameController {
             @ApiResponse(responseCode = "404", description = "Error", content = @Content)})
     @GetMapping("/{gid}/sim")
     public ResponseEntity<String> simulateGame(@PathVariable long gid, HttpSession session){
-        Game game = gameService.getById(gid);
+        Game game = gameService.getById(gid); // add null check...
         if (game.getGameStatus() == GameStatus.IN_PROGRESS) {
             eventPublisher.publishSimulateGame(game, (HashMap<Long, Bet>) session.getAttribute("playerBets"));
             game.setGameStatus(GameStatus.COMPLETED);

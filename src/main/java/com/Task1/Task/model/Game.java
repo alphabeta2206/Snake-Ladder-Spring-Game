@@ -2,8 +2,10 @@ package com.Task1.Task.model;
 
 import com.Task1.Task.enums.GameStatus;
 import com.Task1.Task.enums.CancelReason;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.repository.cdi.Eager;
 
 import java.sql.Timestamp;
 import java.util.HashSet;
@@ -31,10 +33,12 @@ public class Game {
     @ManyToOne(
             cascade = CascadeType.ALL
     )
+    @JsonIgnoreProperties(value = {"applications", "hibernateLazyInitializer"})
     private User creator;
 
     @OneToMany(
             cascade = CascadeType.PERSIST
     )
+    @JsonIgnoreProperties(value = {"applications", "hibernateLazyInitializer"})
     private Set<User> players = new HashSet<>();
 }
