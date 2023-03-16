@@ -78,8 +78,8 @@ public class GameController {
         return ResponseEntity.status(HttpStatus.OK).body(game);
     }
 
-    @PreAuthorize("ROLE_ADMIN")
     @Operation(summary = "Starts a Created Game")
+    @PreAuthorize("ROLE_ADMIN")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Game Started", content = {@Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = Game.class))}),
             @ApiResponse(responseCode = "404", description = "Error", content = @Content)})
     @GetMapping("/{gid}/start")
@@ -176,7 +176,7 @@ public class GameController {
         if (game.getGameStatus() == GameStatus.IN_PROGRESS) {
             eventPublisher.publishSimulateGame(game, (HashMap<Long, Bet>) session.getAttribute("playerBets"));
             game.setGameStatus(GameStatus.COMPLETED);
-            gameService.saveGame(game);;
+            gameService.saveGame(game);
         }
         else return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body("Game State Does Not Allow Simulation");
         return ResponseEntity.status(HttpStatus.OK).body("Game Simulation in Progress");
