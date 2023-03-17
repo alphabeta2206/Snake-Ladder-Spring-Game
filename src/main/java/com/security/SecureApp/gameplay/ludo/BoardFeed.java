@@ -1,6 +1,7 @@
 package com.security.SecureApp.gameplay.ludo;
 
-import com.spring.game.dto.LudoPlayerDTO;
+
+import com.security.SecureApp.DTOs.LudoPlayerDTO;
 
 import java.util.List;
 public class BoardFeed {

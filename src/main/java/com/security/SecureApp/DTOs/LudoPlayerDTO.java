@@ -21,6 +21,7 @@ public class LudoPlayerDTO {
     private List<Character> pawnLobby;
     private Map<Character,Integer> pawnPosition;
     private List<Character> safeLobby;
+    private int absolutePosition;
 
 
     public LudoPlayerDTO(long id){
@@ -33,5 +34,7 @@ public class LudoPlayerDTO {
         this.pawnLobby.add('d');
         this.two_sixes = false;
         this.three_sixes = false;
+        this.absolutePosition = startPosition;
+
     }
 }
