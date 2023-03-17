@@ -71,7 +71,6 @@ public class GameController {
     @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "Game Created", content = {@Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = Game.class))}),
             @ApiResponse(responseCode = "404", description = "Game Not Created", content = @Content)})
     @RequestMapping("/create")
-    @ResponseBody
     public ResponseEntity<?> createGame(@RequestBody GameDTO gameDTO, Principal principal) {
         Game game = new Game();
         User creator = userService.findByUsername(principal.getName());
@@ -99,7 +98,6 @@ public class GameController {
     @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "Joined Game", content = {@Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = Game.class))}),
             @ApiResponse(responseCode = "404", description = "Can't Join Game", content = @Content)})
     @RequestMapping("/{id}/join")
-    @ResponseBody
     public ResponseEntity<?> joinGame(@PathVariable Long id, Principal principal) {
         User user = userService.findByUsername(principal.getName());
         Game game = gameService.findById(id);
@@ -125,7 +123,6 @@ public class GameController {
     @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "Game Started", content = {@Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = Game.class))}),
             @ApiResponse(responseCode = "404", description = "Can't Start Game", content = @Content)})
     @RequestMapping("/{id}/start")
-    @ResponseBody
     public ResponseEntity<?> startGame(@PathVariable Long id, Principal principal, HttpSession session) {
         User creator = userService.findByUsername(principal.getName());
         Game game = gameService.findById(id);
@@ -167,7 +164,6 @@ public class GameController {
     @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "Game Cancelled", content = {@Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = Game.class))}),
             @ApiResponse(responseCode = "404", description = "Can't Cancel Game", content = @Content)})
     @RequestMapping("/{id}/cancelGame")
-    @ResponseBody
     public ResponseEntity<?> cancelGame(@PathVariable long id, @RequestBody String reason, Principal principal, HttpSession session){
         Game game = gameService.findById(id);
         User creator = userService.findByUsername(principal.getName());
@@ -209,7 +205,6 @@ public class GameController {
     @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "Game Simulated", content = {@Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = Set.class))}),
             @ApiResponse(responseCode = "404", description = "Can't Simulate Game", content = @Content)})
     @RequestMapping("/{id}/simulate-game")
-    @ResponseBody
     public ResponseEntity<?> simulateGame(@PathVariable long id, Principal principal, HttpSession session){
         Game game = gameService.findById(id);
         if(game.getCreator().getUsername().equals(principal.getName())){
@@ -235,7 +230,6 @@ public class GameController {
     @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "Die Rolled", content = {@Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = String.class))}),
             @ApiResponse(responseCode = "404", description = "Can't Perform Roll Die", content = @Content)})
     @RequestMapping("/{id}/roll-die")
-    @ResponseBody
     public ResponseEntity<String> rollDie(@PathVariable long id, Principal principal, HttpSession session){
         Game game = gameService.findById(id);
         if(game.getGameStatus().equals(GameStatus.IN_PROGRESS)) {
@@ -273,7 +267,6 @@ public class GameController {
     @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "Game Cancelled", content = {@Content(mediaType = APPLICATION_JSON_VALUE, schema = @Schema(implementation = Set.class))}),
             @ApiResponse(responseCode = "404", description = "Can't End Game", content = @Content)})
     @RequestMapping("/{id}/endGame")
-    @ResponseBody
     public ResponseEntity<?> endGame(@PathVariable long id, Principal principal, HttpSession session) {
         User user = userService.findByUsername(principal.getName());
         Game game = gameService.findById(id);
