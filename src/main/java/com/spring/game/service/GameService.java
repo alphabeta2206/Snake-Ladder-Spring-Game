@@ -31,8 +31,8 @@ public class GameService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GameService.class);
 
-    public void createGameType(GameType gameType){
-        gameTypeRepo.save(gameType);
+    public GameType createGameType(GameType gameType){
+        return gameTypeRepo.save(gameType);
     }
 
     public Game findById(long id) {
