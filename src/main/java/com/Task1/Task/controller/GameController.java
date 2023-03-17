@@ -118,7 +118,7 @@ public class GameController {
             List<Bet> betList = new ArrayList<>();
             HashMap<Long, Bet> bets = (HashMap<Long, Bet>) session.getAttribute("playerBets");
             if (bets != null) {
-                if (game.getGameStatus() == GameStatus.IN_PROGRESS) {
+                if (game.getGameStatus() == GameStatus.IN_PROGRESS || game.getGameStatus() == GameStatus.NEW) {
                     playerList.forEach(user -> {
                         Bet bet = bets.get(user.getId());
                         bet.setPayOff(game.getBetAmount());
