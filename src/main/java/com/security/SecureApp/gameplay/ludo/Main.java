@@ -8,6 +8,7 @@ import java.util.List;
 
 
 public class Main {
+
     public static void main(String...args){
         List<LudoPlayerDTO> playerDTOS = new ArrayList<>();
         playerDTOS.add(new LudoPlayerDTO(1L));
@@ -16,5 +17,7 @@ public class Main {
         playerDTOS.add(new LudoPlayerDTO(4L));
 
         System.out.println(playerDTOS);
+        LudoPlay ludoPlay = new LudoPlay();
+        ludoPlay.playLudo(playerDTOS);
     }
 }

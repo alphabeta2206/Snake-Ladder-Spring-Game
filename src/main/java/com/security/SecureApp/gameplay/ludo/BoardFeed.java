@@ -4,48 +4,50 @@ package com.security.SecureApp.gameplay.ludo;
 import com.security.SecureApp.DTOs.LudoPlayerDTO;
 
 import java.util.List;
+
 public class BoardFeed {
     List<String> board;
-    public List<String> makeMainBoard(List<LudoPlayerDTO> playersDTO){
-        try{
-            CreateBoard createBoard = new CreateBoard();
-            board = createBoard.mainCreateBoard();
-            String temp = "";
 
-            for (int i = 0; i < playersDTO.size(); i++) {
-                for(String key : playersDTO.get(i).getPawnPositions().keySet()){
-                    temp = board.get(playersDTO.get(i).getPawnPositions().get(key));
-                    board.set(playersDTO.get(i).getPawnPositions().get(key), temp+"_P"+(i+1)+"-"+key);
-                }
-            }
-            System.out.println(playersDTO);
-            return board;
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
-        return null;
-    }
+    public List<String> makeMainBoard(List<LudoPlayerDTO> playersDTO) {
 
-    public List<String> updatePawnLobby(List<LudoPlayerDTO> playersDTO, int playerID){
-        System.out.println(playersDTO);
-        String pawn = "";
+        //null points are there in the playerdtos and this is not able to manage that ...how to do is the question
+
 
         CreateBoard createBoard = new CreateBoard();
-        playersDTO.get(playerID).setPawnPositions(createBoard.getPawnPosition(playersDTO.size(), playerID,pawn));
+        board = createBoard.mainCreateBoard();
+        String temp = "";
 
+        for (int i = 0; i < playersDTO.size(); i++) {
+            if (playersDTO.get(i).getPawnPosition()!=null){
+                for (Character key : playersDTO.get(i).getPawnPosition().keySet()) {
+                    temp = board.get(playersDTO.get(i).getPawnPosition().get(key));
+                    board.set(playersDTO.get(i).getPawnPosition().get(key), temp + "_P" + (i + 1) + "-" + key);
+                }
+            }
+            else {
+                continue;
+            }
+        }
+        System.out.println(playersDTO);
+        return board;
+    }
 
-return null;
+//    public int getStartingPosition(List<LudoPlayerDTO> players, int playerID){
+//
+//
+//    }
+
+    public List<String> updatePawnLobby(List<LudoPlayerDTO> playersDTO, int playerID) {
+        System.out.println(playersDTO);
+        char pawn = 'a';
+
+        playersDTO.get(playerID).getPawnLobby();
+        return null;
     }
 
 //    public List<String> getSafeBoard(List<LudoPlayerDTO> playersDTO){
 //
 //    }
-
-
-
-
-
 
 
 }
