@@ -46,4 +46,4 @@ public class CurrencyController {
         return ResponseEntity.status(HttpStatus.OK).body(currencyService.getCurrencyExchanges());
     }
 }
-//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
+//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
