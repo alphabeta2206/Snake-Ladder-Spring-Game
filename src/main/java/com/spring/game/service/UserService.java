@@ -5,6 +5,7 @@ import com.spring.game.dto.UserRegistrationDTO;
 import com.spring.game.model.Role;
 import com.spring.game.model.User;
 import com.spring.game.repository.UserRepo;
+import com.spring.game.security.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -12,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.Collection;
 import java.util.List;
@@ -22,7 +24,7 @@ public class UserService implements UserDetailsService{
     @Autowired
     private UserRepo userRepo;
     @Autowired
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
+    private PasswordEncoder bCryptPasswordEncoder;
     @Autowired
     private AuthenticationService authenticationService;
 
@@ -69,7 +71,7 @@ public class UserService implements UserDetailsService{
         User user = userRepo.findByUsername(username);
         if(user == null)
             throw new UsernameNotFoundException("Invalid username or password");
-        return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), mapRolesToAuthorities(user.getRoles()));
+        return new UserDetailsImpl(user.getId(), user.getUsername(), user.getPassword(), mapRolesToAuthorities(user.getRoles()));
     }
 
     private Collection<? extends GrantedAuthority> mapRolesToAuthorities(Collection<Role> roles) {
